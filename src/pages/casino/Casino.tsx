@@ -94,7 +94,7 @@ export const Casino: React.FC = () => {
             <div
               key={game.id}
               onClick={() => setActiveGame(game.id)}
-              className="bg-white/5 rounded-2xl p-4 border border-white/10 hover:border-purple-400/30 transition-all duration-300 hover:scale-105 cursor-pointer group backdrop-blur-sm"
+              className="bg-white/5 rounded-2xl p-4 border border-white/10 hover:border-purple-400/30 transition-all duration-300 hover:scale-100 cursor-pointer group backdrop-blur-sm"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${game.color} flex items-center justify-center shadow-lg`}>

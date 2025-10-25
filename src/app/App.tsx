@@ -1,26 +1,24 @@
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "../components/ProtectedRoute";
 import { Home } from "../pages/home/Home";
-import { BottomNavigation } from "../components/BottomNavigation";
 import { Casino } from "../pages/casino/Casino";
+import { Finance } from "../pages/finance/Finance";
 import { Profile } from "../pages/profile/Profile";
-import { Finance } from "../pages/finance/finance";
+import { BottomNavigation } from "../components/BottomNavigation";
 
 export const App: React.FC = () => {
   return (
-    <>
-      <div className="pb-20">
-        {" "}
-        {/* Отступ для bottom navigation */}
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-b from-purple-900 to-purple-800">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/home" element={<Home />} />
           <Route path="/casino" element={<Casino />} />
+          <Route path="/account" element={<Finance />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/finance" element={<Finance />} />
         </Routes>
+        <BottomNavigation />
       </div>
-      <BottomNavigation />
-    </>
+    </ProtectedRoute>
   );
 };

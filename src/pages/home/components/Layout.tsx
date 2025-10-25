@@ -1,5 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import React from "react";
+import avatar from "../../../assets/avatar.png"
 
 export const Layout: React.FC = () => {
   return (
@@ -10,7 +11,7 @@ export const Layout: React.FC = () => {
           <div className="relative">
             <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 to-purple-600 rounded-full p-0.5">
               <img
-                src="/avatar.png"
+                src={avatar}
                 alt="Аватар Андрей"
                 className="w-full h-full rounded-full border-2 border-purple-950"
               />
