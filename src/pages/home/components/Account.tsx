@@ -7,11 +7,26 @@ import {
   EyeOff,
   Calendar,
   QrCode,
+  Copy,
+  Check,
 } from "lucide-react";
 
-export const Account: React.FC = () => {
-  const [balance, setBalance] = React.useState(15470.85);
+interface Props {
+  fullName: string | undefined;
+  card:
+    | {
+        balance: number;
+        number: string;
+        code: string;
+        date: string;
+      }
+    | undefined;
+}
+
+export const Account: React.FC<Props> = ({ fullName, card }) => {
   const [isBalanceVisible, setIsBalanceVisible] = React.useState(true);
+  const [isCardDetailsVisible, setIsCardDetailsVisible] = React.useState(false);
+  const [copiedField, setCopiedField] = React.useState<string | null>(null);
 
   const formatBalance = (amount: number) => {
     return new Intl.NumberFormat("ru-RU", {
@@ -24,14 +39,26 @@ export const Account: React.FC = () => {
     return number.replace(/(\d{4})/g, "$1 ").trim();
   };
 
-  // Реалистичные данные карты
+  const formatCardNumberHidden = (number: string) => {
+    const visiblePart = number.slice(-4);
+    return `•••• •••• •••• ${visiblePart}`;
+  };
+
+  const copyToClipboard = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  // Используем реальные данные из props или fallback значения
   const cardData = {
-    number: "5536913762891234",
-    expiry: "12/26",
-    holder: "АНДРЕЙ Б.",
-    system: "VISA",
-    balance: 15470.85,
+    number: card?.number || "2200123456789012",
+    expiry: card?.date || "12/28",
+    code: card?.code || "123",
+    balance: card?.balance || 15470.85,
     currency: "RUB",
+    holder: fullName ? `${fullName.toUpperCase()}` : "АНДРЕЙ Б.",
+    system: "VISA",
   };
 
   // Реалистичные транзакции
@@ -98,7 +125,9 @@ export const Account: React.FC = () => {
             </h3>
             <div className="flex items-center gap-3">
               <span className="text-3xl font-bold text-white tracking-tight">
-                {isBalanceVisible ? `${formatBalance(balance)} ₽` : "••••• ₽"}
+                {isBalanceVisible
+                  ? `${formatBalance(cardData.balance)} ₽`
+                  : "••••• ₽"}
               </span>
               <button
                 onClick={() => setIsBalanceVisible(!isBalanceVisible)}
@@ -123,19 +152,38 @@ export const Account: React.FC = () => {
         {/* Номер карты */}
         <div className="flex items-center gap-4 mb-4 relative z-10">
           <div className="flex gap-3">
-            {formatCardNumber(cardData.number)
-              .split(" ")
-              .map((part, index) => (
-                <span
-                  key={index}
-                  className={`text-lg font-mono font-bold ${
-                    index < 3 ? "text-white/30" : "text-white/80"
-                  }`}
-                >
-                  {index < 3 ? "••••" : part}
-                </span>
-              ))}
+            {isCardDetailsVisible
+              ? formatCardNumber(cardData.number)
+                  .split(" ")
+                  .map((part, index) => (
+                    <span
+                      key={index}
+                      className="text-lg font-mono font-bold text-white/80"
+                    >
+                      {part}
+                    </span>
+                  ))
+              : formatCardNumberHidden(cardData.number)
+                  .split(" ")
+                  .map((part, index) => (
+                    <span
+                      key={index}
+                      className="text-lg font-mono font-bold text-white/80"
+                    >
+                      {part}
+                    </span>
+                  ))}
           </div>
+          <button
+            onClick={() => setIsCardDetailsVisible(!isCardDetailsVisible)}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors border border-white/10"
+          >
+            {isCardDetailsVisible ? (
+              <EyeOff className="w-5 h-5 text-white/50" />
+            ) : (
+              <Eye className="w-5 h-5 text-white/50" />
+            )}
+          </button>
         </div>
 
         {/* Детали карты */}
@@ -158,6 +206,87 @@ export const Account: React.FC = () => {
             <div className="text-white font-medium">{cardData.currency}</div>
           </div>
         </div>
+
+        {/* Детали карты (скрытые по умолчанию) */}
+        {isCardDetailsVisible && (
+          <div className="mt-6 pt-6 border-t border-white/10 relative z-10">
+            <h4 className="text-white/70 text-sm font-medium mb-3">
+              Данные карты
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="text-white/50 text-xs mb-1">Номер карты</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-mono">
+                    {formatCardNumber(cardData.number)}
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(cardData.number, "number")}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    {copiedField === "number" ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white/50" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div className="text-white/50 text-xs mb-1">CVV/CVC код</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-mono">{cardData.code}</span>
+                  <button
+                    onClick={() => copyToClipboard(cardData.code, "code")}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    {copiedField === "code" ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white/50" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div className="text-white/50 text-xs mb-1">Срок действия</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-mono">
+                    {cardData.expiry}
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(cardData.expiry, "expiry")}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    {copiedField === "expiry" ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white/50" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div className="text-white/50 text-xs mb-1">Владелец</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-white font-mono">
+                    {cardData.holder}
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(cardData.holder, "holder")}
+                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                  >
+                    {copiedField === "holder" ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-white/50" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Кнопки действий */}
@@ -178,7 +307,7 @@ export const Account: React.FC = () => {
         </button>
       </div>
 
-      {/* История операций */}
+      {/* История операций
       <div className="bg-white/5 rounded-2xl p-5 border border-white/10 backdrop-blur-sm">
         <h4 className="text-white font-semibold mb-4 text-lg">
           История операций
@@ -224,7 +353,7 @@ export const Account: React.FC = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

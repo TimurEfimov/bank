@@ -13,7 +13,7 @@ export const fetchUserData = createAsyncThunk<User>(
     }
 
     const response = await axios.get(
-      `https://03c132031fd69d74.mokky.dev/users/${userId}`,
+      `https://7437cc39e8e31242.mokky.dev/users/${userId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

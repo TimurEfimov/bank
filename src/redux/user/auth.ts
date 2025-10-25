@@ -4,7 +4,7 @@ import type { AuthCredentials } from "./types";
 export const authUser = createAsyncThunk(
   "user/authUser",
   async (credentials: AuthCredentials) => {
-    const res = await fetch("https://9303851354d5e8f0.mokky.dev/auth", {
+    const res = await fetch("https://7437cc39e8e31242.mokky.dev/auth", {
       method: "POST",
       headers: {
         Accept: "application/json",
@@ -23,11 +23,6 @@ export const authUser = createAsyncThunk(
     const data = await res.json();
     localStorage.setItem("token", data.token);
     localStorage.setItem("userId", data.data.id.toString());
-
-    console.log(localStorage.getItem("userId"));
-    console.log(localStorage.getItem("token"));
-
-    console.log("User authenticated:", credentials);
     return data; // Возвращаем данные для сохранения в стейт
   }
 );

@@ -1,266 +1,354 @@
 import React, { useState } from "react";
-import { RotateCcw, Plus, Minus } from "lucide-react";
+import { ArrowLeft, RotateCcw } from "lucide-react";
 
-interface BlackjackGameProps {
+export interface BlackjackGameProps {
   balance: number;
   setBalance: (balance: number) => void;
   onBack: () => void;
+  onGameResult: (
+    result: "win" | "loss",
+    amount: number,
+    newBalance: number
+  ) => void;
 }
+
+const cardValues = [
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "J",
+  "Q",
+  "K",
+  "A",
+];
+const cardSuits = ["♠", "♥", "♦", "♣"];
 
 export const BlackjackGame: React.FC<BlackjackGameProps> = ({
   balance,
   setBalance,
   onBack,
+  onGameResult,
 }) => {
-  const [bet, setBet] = useState(100);
-  const [playerHand, setPlayerHand] = useState<number[]>([]);
-  const [dealerHand, setDealerHand] = useState<number[]>([]);
+  const [betAmount, setBetAmount] = useState<number>(100);
+  const [playerCards, setPlayerCards] = useState<string[]>([]);
+  const [dealerCards, setDealerCards] = useState<string[]>([]);
   const [gameState, setGameState] = useState<
-    "betting" | "player-turn" | "dealer-turn" | "result"
+    "betting" | "player-turn" | "dealer-turn" | "finished"
   >("betting");
-  const [result, setResult] = useState<string>("");
+  const [gameResult, setGameResult] = useState<"win" | "loss" | "push" | null>(
+    null
+  );
+  const [winAmount, setWinAmount] = useState<number>(0);
 
-  const getCardValue = (card: number): number => {
-    return card > 10 ? 10 : card;
+  const getRandomCard = (): string => {
+    const value = cardValues[Math.floor(Math.random() * cardValues.length)];
+    const suit = cardSuits[Math.floor(Math.random() * cardSuits.length)];
+    return `${value}${suit}`;
   };
 
-  const calculateHand = (hand: number[]): number => {
-    let total = hand.reduce((sum, card) => sum + getCardValue(card), 0);
-    const aces = hand.filter((card) => card === 1).length;
+  const calculateHandValue = (hand: string[]): number => {
+    let value = 0;
+    let aces = 0;
 
-    for (let i = 0; i < aces; i++) {
-      if (total + 10 <= 21) total += 10;
+    hand.forEach((card) => {
+      const cardValue = card.slice(0, -1);
+      if (["J", "Q", "K"].includes(cardValue)) {
+        value += 10;
+      } else if (cardValue === "A") {
+        aces += 1;
+        value += 11;
+      } else {
+        value += parseInt(cardValue);
+      }
+    });
+
+    // Обрабатываем тузы
+    while (value > 21 && aces > 0) {
+      value -= 10;
+      aces -= 1;
     }
 
-    return total;
+    return value;
   };
 
   const startGame = () => {
-    if (bet > balance) return;
+    if (betAmount > balance) return;
 
-    const newBalance = balance - bet;
-    setBalance(newBalance);
-    const newPlayerHand = [getRandomCard(), getRandomCard()];
-    const newDealerHand = [getRandomCard(), getRandomCard()];
+    const newPlayerCards = [getRandomCard(), getRandomCard()];
+    const newDealerCards = [getRandomCard(), getRandomCard()];
 
-    setPlayerHand(newPlayerHand);
-    setDealerHand(newDealerHand);
+    setPlayerCards(newPlayerCards);
+    setDealerCards(newDealerCards);
     setGameState("player-turn");
-    setResult("");
+    setGameResult(null);
   };
 
-  const getRandomCard = (): number => {
-    return Math.floor(Math.random() * 13) + 1;
-  };
+  const playerHit = () => {
+    const newPlayerCards = [...playerCards, getRandomCard()];
+    setPlayerCards(newPlayerCards);
 
-  const hit = () => {
-    const newCard = getRandomCard();
-    const newHand = [...playerHand, newCard];
-    setPlayerHand(newHand);
-
-    if (calculateHand(newHand) > 21) {
-      setGameState("result");
-      setResult("Перебор! Вы проиграли");
+    if (calculateHandValue(newPlayerCards) > 21) {
+      endGame("loss");
     }
   };
 
-  const stand = () => {
+  const playerStand = () => {
     setGameState("dealer-turn");
     dealerPlay();
   };
 
   const dealerPlay = () => {
-    let currentDealerHand = [...dealerHand];
+    let newDealerCards = [...dealerCards];
 
-    while (calculateHand(currentDealerHand) < 17) {
-      currentDealerHand.push(getRandomCard());
+    while (calculateHandValue(newDealerCards) < 17) {
+      newDealerCards = [...newDealerCards, getRandomCard()];
     }
 
-    setDealerHand(currentDealerHand);
+    setDealerCards(newDealerCards);
+    endGame(null);
+  };
 
-    const playerTotal = calculateHand(playerHand);
-    const dealerTotal = calculateHand(currentDealerHand);
+  const endGame = (forcedResult: "win" | "loss" | "push" | null) => {
+    let finalResult: "win" | "loss" | "push";
+    let finalWinAmount = 0;
 
-    let gameResult = "";
-    let winAmount = 0;
-
-    if (dealerTotal > 21) {
-      gameResult = "Дилер перебрал! Вы выиграли";
-      winAmount = bet * 2;
-    } else if (playerTotal > dealerTotal) {
-      gameResult = "Вы выиграли!";
-      winAmount = bet * 2;
-    } else if (playerTotal < dealerTotal) {
-      gameResult = "Дилер выиграл";
+    if (forcedResult) {
+      finalResult = forcedResult;
     } else {
-      gameResult = "Ничья!";
-      winAmount = bet;
+      const playerValue = calculateHandValue(playerCards);
+      const dealerValue = calculateHandValue(dealerCards);
+
+      if (playerValue > 21) {
+        finalResult = "loss";
+      } else if (dealerValue > 21) {
+        finalResult = "win";
+      } else if (playerValue > dealerValue) {
+        finalResult = "win";
+      } else if (playerValue < dealerValue) {
+        finalResult = "loss";
+      } else {
+        finalResult = "push";
+      }
     }
 
-    if (winAmount > 0) {
-      // Используем текущий баланс после вычитания ставки
-      const currentBalance = balance - bet;
-      setBalance(currentBalance + winAmount);
-    }
+    // Устанавливаем результат игры
+    setGameResult(finalResult);
+    setGameState("finished");
 
-    setResult(gameResult);
-    setGameState("result");
+    // Обновляем баланс в зависимости от результата
+    if (finalResult === "win") {
+      finalWinAmount = betAmount * 2;
+      const newBalance = balance + finalWinAmount;
+      setWinAmount(finalWinAmount);
+      setBalance(newBalance);
+      onGameResult("win", finalWinAmount, newBalance);
+    } else if (finalResult === "loss") {
+      finalWinAmount = betAmount;
+      const newBalance = balance - finalWinAmount;
+      setWinAmount(finalWinAmount);
+      setBalance(newBalance);
+      onGameResult("loss", finalWinAmount, newBalance);
+    } else {
+      // push - ничья, деньги возвращаются
+      setWinAmount(0);
+    }
   };
 
-  const renderCard = (card: number, hidden: boolean = false) => {
-    if (hidden) {
-      return (
-        <div className="w-16 h-24 bg-gradient-to-br from-purple-600 to-pink-600 rounded-lg flex items-center justify-center text-white font-bold border-2 border-white/20">
-          ?
-        </div>
-      );
-    }
-
-    const suits = ["♠", "♥", "♦", "♣"];
-    const suit = suits[Math.floor(card / 13)];
-    const value =
-      card === 1
-        ? "A"
-        : card === 11
-        ? "J"
-        : card === 12
-        ? "Q"
-        : card === 13
-        ? "K"
-        : card;
-
-    return (
-      <div className="w-16 h-24 bg-white rounded-lg flex flex-col items-center justify-center text-black font-bold border-2 border-gray-300">
-        <div className="text-lg">{value}</div>
-        <div className="text-sm">{suit}</div>
-      </div>
-    );
+  const resetGame = () => {
+    setPlayerCards([]);
+    setDealerCards([]);
+    setGameState("betting");
+    setGameResult(null);
+    setWinAmount(0);
   };
+
+  const increaseBet = (amount: number) => {
+    const newBet = betAmount + amount;
+    if (newBet <= balance) {
+      setBetAmount(newBet);
+    }
+  };
+
+  const setMaxBet = () => {
+    setBetAmount(balance);
+  };
+
+  const playerValue = calculateHandValue(playerCards);
+  const dealerValue = calculateHandValue(dealerCards);
 
   return (
-    <div className="mx-4 my-6">
-      <button
-        onClick={onBack}
-        className="flex items-center gap-2 text-purple-300/70 mb-4 hover:text-white transition-colors"
-      >
-        <RotateCcw className="w-4 h-4" />
-        Назад к играм
-      </button>
-
-      <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-        <h2 className="text-2xl font-bold text-white text-center mb-6">
-          Блэкджек
-        </h2>
-
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-black/20 rounded-xl p-3 text-center">
-            <div className="text-white/60 text-sm">Баланс</div>
-            <div className="text-xl font-bold text-white">
-              {balance.toLocaleString("ru-RU")} ₽
-            </div>
-          </div>
-          <div className="bg-black/20 rounded-xl p-3 text-center">
-            <div className="text-white/60 text-sm">Ставка</div>
-            <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={() => setBet(Math.max(100, bet - 50))}
-                className="p-1 bg-white/10 rounded-lg"
-              >
-                <Minus className="w-4 h-4 text-white" />
-              </button>
-              <input
-                type="number"
-                value={bet}
-                onChange={(e) => setBet(Number(e.target.value))}
-                className="text-xl font-bold text-white bg-transparent border-none outline-none text-center w-20"
-                min="100"
-                max={balance}
-              />
-              <button
-                onClick={() => setBet(Math.min(balance, bet + 50))}
-                className="p-1 bg-white/10 rounded-lg"
-              >
-                <Plus className="w-4 h-4 text-white" />
-              </button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-emerald-900 to-green-950 text-white p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Назад
+        </button>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Блэкджек</h1>
+          <div className="text-white/60 text-sm">
+            Баланс: {balance.toLocaleString()} ₽
           </div>
         </div>
+        <div className="w-10"></div>
+      </div>
 
-        {/* Дилер */}
+      {/* Game Area */}
+      <div className="bg-white/5 rounded-2xl p-6 border border-white/10 mb-6">
+        {/* Dealer's Hand */}
         <div className="mb-8">
-          <div className="text-white/60 text-center mb-4">
-            Дилер: {gameState !== "betting" && calculateHand(dealerHand)}
+          <div className="text-white/60 text-sm mb-2">
+            Диллер {gameState !== "betting" && `(${dealerValue})`}
           </div>
-          <div className="flex justify-center gap-2">
-            {dealerHand.map((card, index) =>
-              renderCard(card, gameState === "player-turn" && index === 1)
-            )}
-          </div>
-        </div>
-
-        {/* Игрок */}
-        <div className="mb-8">
-          <div className="text-white/60 text-center mb-4">
-            Игрок: {calculateHand(playerHand)}
-          </div>
-          <div className="flex justify-center gap-2">
-            {playerHand.map((card, index) => renderCard(card))}
+          <div className="flex gap-2">
+            {dealerCards.map((card, index) => (
+              <div
+                key={index}
+                className="w-16 h-24 bg-gradient-to-b from-red-600 to-red-700 rounded-lg flex items-center justify-center border-2 border-white/20 text-xl font-bold"
+              >
+                {card}
+              </div>
+            ))}
           </div>
         </div>
 
-        {result && (
-          <div
-            className={`text-center text-2xl font-bold mb-4 ${
-              result.includes("выиграл")
-                ? "text-emerald-400"
-                : result.includes("проиграл")
-                ? "text-red-400"
-                : "text-yellow-400"
+        {/* Player's Hand */}
+        <div className="mb-6">
+          <div className="text-white/60 text-sm mb-2">
+            Вы {gameState !== "betting" && `(${playerValue})`}
+          </div>
+          <div className="flex gap-2">
+            {playerCards.map((card, index) => (
+              <div
+                key={index}
+                className="w-16 h-24 bg-gradient-to-b from-blue-600 to-blue-700 rounded-lg flex items-center justify-center border-2 border-white/20 text-xl font-bold"
+              >
+                {card}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Game Controls */}
+        {gameState === "betting" && (
+          <button
+            onClick={startGame}
+            disabled={betAmount > balance}
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 ${
+              betAmount > balance
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700"
             }`}
           >
-            {result}
+            Начать игру
+          </button>
+        )}
+
+        {gameState === "player-turn" && (
+          <div className="flex gap-3">
+            <button
+              onClick={playerHit}
+              className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-all"
+            >
+              Еще карту
+            </button>
+            <button
+              onClick={playerStand}
+              className="flex-1 py-4 bg-orange-600 hover:bg-orange-700 rounded-xl font-bold transition-all"
+            >
+              Хватит
+            </button>
           </div>
         )}
 
-        <div className="flex gap-3">
-          {gameState === "betting" ? (
-            <button
-              onClick={startGame}
-              disabled={bet > balance}
-              className="flex-1 py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-xl font-bold transition-all duration-300 transform hover:scale-105 disabled:scale-100"
+        {gameState === "finished" && (
+          <div className="text-center">
+            <div
+              className={`text-xl font-bold mb-4 ${
+                gameResult === "win"
+                  ? "text-green-400"
+                  : gameResult === "loss"
+                  ? "text-red-400"
+                  : "text-yellow-400"
+              }`}
             >
-              Начать игру ({bet}₽)
-            </button>
-          ) : gameState === "player-turn" ? (
-            <>
-              <button
-                onClick={hit}
-                className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white rounded-xl font-bold transition-all duration-300 transform hover:scale-105"
-              >
-                Взять карту
-              </button>
-              <button
-                onClick={stand}
-                className="flex-1 py-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white rounded-xl font-bold transition-all duration-300 transform hover:scale-105"
-              >
-                Хватит
-              </button>
-            </>
-          ) : (
+              {gameResult === "win" &&
+                `🎉 Вы выиграли ${winAmount.toLocaleString()} ₽!`}
+              {gameResult === "loss" &&
+                `😞 Вы проиграли ${winAmount.toLocaleString()} ₽`}
+              {gameResult === "push" && "🤝 Ничья! Ставка возвращена"}
+            </div>
             <button
-              onClick={() => {
-                setGameState("betting");
-                setPlayerHand([]);
-                setDealerHand([]);
-                setResult("");
-              }}
-              className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-bold transition-all duration-300 transform hover:scale-105"
+              onClick={resetGame}
+              className="w-full py-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 rounded-xl font-bold transition-all"
             >
               Новая игра
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* Bet Controls */}
+      {gameState === "betting" && (
+        <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+          <div className="mb-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/60">Сумма ставки</span>
+              <span className="font-bold">{betAmount.toLocaleString()} ₽</span>
+            </div>
+
+            <div className="flex gap-2 mb-4">
+              {[100, 500, 1000].map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => setBetAmount(amount)}
+                  className={`flex-1 py-2 rounded-lg border transition-all ${
+                    betAmount === amount
+                      ? "bg-emerald-600 border-emerald-400"
+                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                  }`}
+                >
+                  {amount}
+                </button>
+              ))}
+              <button
+                onClick={setMaxBet}
+                className="flex-1 py-2 rounded-lg border border-yellow-400/30 bg-yellow-400/10 hover:bg-yellow-400/20 transition-all"
+              >
+                MAX
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => increaseBet(100)}
+                className="flex-1 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all"
+              >
+                +100
+              </button>
+              <button
+                onClick={() => increaseBet(500)}
+                className="flex-1 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all"
+              >
+                +500
+              </button>
+            </div>
+          </div>
+
+          <div className="text-center text-white/60 text-sm">
+            Цель: набрать 21 очко или больше дилера
+          </div>
+        </div>
+      )}
     </div>
   );
 };

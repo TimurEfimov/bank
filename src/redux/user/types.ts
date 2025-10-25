@@ -5,26 +5,24 @@ export type User = {
   password: string;
 
   profile: {
-    firstName: string;
-    lastName: string;
     avatar: string;
     phone: string;
   };
 
   stats: {
-    balance: number;
-    level: number;
-    experience: number;
-    nextLevelExp: number;
     gamesPlayed: number;
     wins: number;
     losses: number;
   };
 
-  dates: {
-    joinedDate: string;
-    lastLogin: string;
-  };
+  card: {
+    balance: number;
+    number: string;
+    code: string;
+    date: string;
+  }
+
+  joinedDate: string;
 };
 
 export type RegisterUserData = {
