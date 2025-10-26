@@ -10,7 +10,7 @@ import { useAppDispatch } from "../../redux/store";
 import { putUser } from "../../redux/user/putUser";
 import { fetchUserData } from "../../redux/user/apiUser";
 
-export const Casino: React.FC = () => {
+export const Games: React.FC = () => {
   const { userData } = useSelector(getUserData);
   const dispatch = useAppDispatch();
 
@@ -151,11 +151,11 @@ export const Casino: React.FC = () => {
     );
   }
 
-  // Главное меню казино
+  // Главное меню игр
   return (
     <div className="mx-4 my-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Казино</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Игры</h1>
         <p className="text-purple-300/70">Выберите игру и начните выигрывать</p>
       </div>
 

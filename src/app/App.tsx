@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "../components/ProtectedRoute";
 import { Home } from "../pages/home/Home";
-import { Casino } from "../pages/casino/Casino";
+import { Games } from "../pages/games/Games";
 import { Finance } from "../pages/finance/Finance";
 import { Profile } from "../pages/profile/Profile";
 import { BottomNavigation } from "../components/BottomNavigation";
@@ -14,7 +14,7 @@ export const App: React.FC = () => {
         <div className="pb-10">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/casino" element={<Casino />} />
+            <Route path="/games" element={<Games />} />
             <Route path="/finance" element={<Finance />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>
