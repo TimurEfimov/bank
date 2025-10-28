@@ -8,8 +8,7 @@ export const BottomNavigation: React.FC = () => {
 
   const tabs = [
     { id: "home", label: "Главная", icon: Home, path: "/" },
-    { id: "Games", label: "Игры", icon: CircleDollarSign, path: "/games" },
-    // { id: "finance", label: "Финансы", icon: CreditCard, path: "/finance" },
+    { id: "games", label: "Игры", icon: CircleDollarSign, path: "/games" },
     { id: "profile", label: "Профиль", icon: User, path: "/profile" },
   ];
 
