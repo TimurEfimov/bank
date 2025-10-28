@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Dice5, Coins, Crown, Zap } from "lucide-react";
+import { Dice5, Coins, Crown, Zap, Trophy, Star } from "lucide-react";
 import { DiceGame } from "./games/DiceGame";
 import { SlotsGame } from "./games/SlotsGame";
 import { BlackjackGame } from "./games/BlackjackGame";
@@ -10,19 +10,33 @@ import { useAppDispatch } from "../../redux/store";
 import { putUser } from "../../redux/user/putUser";
 import { fetchUserData } from "../../redux/user/apiUser";
 
+export interface GamesProps {
+  points: number;
+  setPoints: (points: number) => void;
+  onBack: () => void;
+  onGameResult: (
+    result: "win" | "loss",
+    pointsChange: number,
+    newPoints: number
+  ) => void;
+  bet: {
+    increase: number[];
+    min: number;
+    max: number;
+    fast: number[];
+  };
+}
+
 export const Games: React.FC = () => {
   const { userData } = useSelector(getUserData);
   const dispatch = useAppDispatch();
+  console.log("Rendering Games component with userData:", userData);
 
   const [activeGame, setActiveGame] = useState<string | null>(null);
-  const [balance, setBalance] = useState<number>(userData?.card?.balance || 0);
+  const [points, setPoints] = useState<number>(userData?.card?.points || 0);
 
   // Функция для обновления статистики после игры
-  const updateUserStats = (
-    result: "win" | "loss",
-    amount: number,
-    newBalance: number
-  ) => {
+  const updateUserStats = (result: "win" | "loss", newPoints: number) => {
     if (!userData) return;
 
     const currentWins = userData.stats?.wins || 0;
@@ -33,58 +47,66 @@ export const Games: React.FC = () => {
       wins: result === "win" ? currentWins + 1 : currentWins,
       losses: result === "loss" ? currentLosses + 1 : currentLosses,
       gamesPlayed: currentGamesPlayed + 1,
+      points: newPoints,
     };
 
     // Отправляем запрос на обновление данных
     dispatch(
       putUser({
         userId: parseInt(userData.id),
-        balance: newBalance,
         wins: updatedStats.wins,
         losses: updatedStats.losses,
         gamesPlayed: updatedStats.gamesPlayed,
+        points: updatedStats.points,
       })
     );
 
-    // Обновляем локальный баланс
-    setBalance(newBalance);
+    // Обновляем локальные очки
+    setPoints(newPoints);
+  };
+
+  const bet = {
+    increase: [100, 500],
+    min: 10,
+    max: 1000,
+    fast: [100, 250, 500],
   };
 
   const games = [
     {
       id: "dice",
       name: "Кости",
-      description: "Классическая игра в кости",
+      description: "Проверь свою удачу в костях",
       icon: Dice5,
       color: "from-purple-600 to-pink-600",
-      minBet: 100,
+      minEntry: bet.min,
       players: "1.2k",
     },
     {
       id: "slots",
       name: "Слоты",
-      description: "Вращай барабаны и выигрывай",
+      description: "Собери выигрышные комбинации",
       icon: Coins,
       color: "from-blue-600 to-cyan-600",
-      minBet: 100,
+      minEntry: bet.min,
       players: "2.4k",
     },
     {
       id: "blackjack",
-      name: "Блэкджек",
-      description: "Набери 21 очко",
+      name: "21 очко",
+      description: "Набери нужное количество очков",
       icon: Crown,
       color: "from-emerald-600 to-green-600",
-      minBet: 100,
+      minEntry: bet.min,
       players: "856",
     },
     {
       id: "roulette",
       name: "Рулетка",
-      description: "Сделай свою ставку",
+      description: "Угадай выигрышный сектор",
       icon: Zap,
       color: "from-orange-600 to-red-600",
-      minBet: 100,
+      minEntry: bet.min,
       players: "1.8k",
     },
   ];
@@ -98,10 +120,11 @@ export const Games: React.FC = () => {
 
     return (
       <DiceGame
-        balance={balance}
-        setBalance={setBalance}
+        points={points}
+        setPoints={setPoints}
         onBack={onBackPage}
         onGameResult={updateUserStats}
+        bet={bet}
       />
     );
   }
@@ -113,10 +136,11 @@ export const Games: React.FC = () => {
     };
     return (
       <SlotsGame
-        balance={balance}
-        setBalance={setBalance}
+        points={points}
+        setPoints={setPoints}
         onBack={onBackPage}
         onGameResult={updateUserStats}
+        bet={bet}
       />
     );
   }
@@ -128,10 +152,11 @@ export const Games: React.FC = () => {
     };
     return (
       <BlackjackGame
-        balance={balance}
-        setBalance={setBalance}
+        points={points}
+        setPoints={setPoints}
         onBack={onBackPage}
         onGameResult={updateUserStats}
+        bet={bet}
       />
     );
   }
@@ -143,10 +168,11 @@ export const Games: React.FC = () => {
     };
     return (
       <RouletteGame
-        balance={balance}
-        setBalance={setBalance}
+        points={points}
+        setPoints={setPoints}
         onBack={onBackPage}
         onGameResult={updateUserStats}
+        bet={bet}
       />
     );
   }
@@ -155,21 +181,28 @@ export const Games: React.FC = () => {
   return (
     <div className="mx-4 my-6">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Игры</h1>
-        <p className="text-purple-300/70">Выберите игру и начните выигрывать</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Игровая зона</h1>
+        <p className="text-purple-300/70">
+          Играйте для развлечения и соревнуйтесь с друзьями
+        </p>
       </div>
 
-      {/* Баланс */}
+      {/* Игровые очки */}
       <div className="bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
         <div className="flex justify-between items-center">
           <div>
-            <div className="text-white/60 text-sm">Ваш баланс</div>
-            <div className="text-2xl font-bold text-white">
-              {balance.toLocaleString("ru-RU")} ₽
+            <div className="text-white/60 text-sm">Ваши игровые очки</div>
+            <div className="text-2xl font-bold text-white flex items-center gap-2">
+              <Trophy className="w-6 h-6 text-yellow-400" />
+              {points.toLocaleString("ru-RU")} очков
+            </div>
+            <div className="text-white/40 text-xs mt-1">
+              Накопите очки для улучшения рейтинга
             </div>
           </div>
-          <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-xl font-semibold transition-all duration-300">
-            Пополнить
+          <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-4 py-2 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2">
+            <Star className="w-4 h-4" />
+            Ежедневный бонус
           </button>
         </div>
       </div>
@@ -199,9 +232,9 @@ export const Games: React.FC = () => {
 
               <div className="flex justify-between items-center">
                 <div className="text-white/50 text-xs">
-                  Мин. ставка:{" "}
+                  Вход:{" "}
                   <span className="text-white font-semibold">
-                    {game.minBet} ₽
+                    {game.minEntry} очков
                   </span>
                 </div>
                 <div className="flex items-center gap-1 text-white/50 text-xs">
@@ -212,6 +245,15 @@ export const Games: React.FC = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* Важное предупреждение */}
+      <div className="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+        <div className="text-yellow-400 text-sm text-center">
+          ⚠️ Все игры предназначены исключительно для развлечения. Игровые очки
+          не имеют денежной стоимости и не могут быть обменены на реальные
+          ценности.
+        </div>
       </div>
     </div>
   );

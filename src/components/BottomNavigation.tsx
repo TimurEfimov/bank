@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, User, CreditCard, CircleDollarSign } from "lucide-react";
+import { Home, User, CircleDollarSign } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 export const BottomNavigation: React.FC = () => {
@@ -8,7 +8,7 @@ export const BottomNavigation: React.FC = () => {
 
   const tabs = [
     { id: "home", label: "Главная", icon: Home, path: "/" },
-    { id: "Games", label: "Игры", icon: CircleDollarSign, path: "/Games" },
+    { id: "Games", label: "Игры", icon: CircleDollarSign, path: "/games" },
     // { id: "finance", label: "Финансы", icon: CreditCard, path: "/finance" },
     { id: "profile", label: "Профиль", icon: User, path: "/profile" },
   ];

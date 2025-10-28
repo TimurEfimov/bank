@@ -1,16 +1,6 @@
 import React, { useState, useRef } from "react";
-import { ArrowLeft } from "lucide-react";
-
-export interface RouletteGameProps {
-  balance: number;
-  setBalance: (balance: number) => void;
-  onBack: () => void;
-  onGameResult: (
-    result: "win" | "loss",
-    amount: number,
-    newBalance: number
-  ) => void;
-}
+import { ArrowLeft, Target, Trophy, Star } from "lucide-react";
+import type { GamesProps } from "../Games";
 
 // Правильное расположение чисел для европейской рулетки
 const rouletteNumbers = [
@@ -73,35 +63,36 @@ const betOptions: BetOption[] = [
   },
 ];
 
-export const RouletteGame: React.FC<RouletteGameProps> = ({
-  balance,
-  setBalance,
+export const RouletteGame: React.FC<GamesProps> = ({
+  points,
+  setPoints,
   onBack,
   onGameResult,
+  bet
 }) => {
-  const [betAmount, setBetAmount] = useState<number>(100);
+  const [entryPoints, setEntryPoints] = useState<number>(bet.min);
   const [selectedBet, setSelectedBet] = useState<BetType>(null);
   const [selectedNumber, setSelectedNumber] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState<boolean>(false);
   const [winningNumber, setWinningNumber] = useState<string | null>(null);
   const [winningColor, setWinningColor] = useState<string | null>(null);
   const [gameResult, setGameResult] = useState<"win" | "loss" | null>(null);
-  const [winAmount, setWinAmount] = useState<number>(0);
+  const [pointsWon, setPointsWon] = useState<number>(0);
 
   const wheelRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
 
   const spinWheel = () => {
-    if (isSpinning || !selectedBet || betAmount > balance) return;
+    if (isSpinning || !selectedBet || entryPoints > points) return;
 
     setIsSpinning(true);
     setGameResult(null);
     setWinningNumber(null);
     setWinningColor(null);
 
-    // Сначала списываем ставку
-    const newBalance = balance - betAmount;
-    setBalance(newBalance);
+    // Сначала списываем очки участия
+    const newPoints = points - entryPoints;
+    setPoints(newPoints);
 
     // Анимация вращения с использованием CSS transitions
     const wheel = wheelRef.current;
@@ -117,7 +108,7 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
     // Запускаем анимацию
     const startTime = Date.now();
     const spinDuration = 4000;
-    const totalRotations = 5; // Уменьшил количество оборотов для мобильных
+    const totalRotations = 5;
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -180,28 +171,28 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
     }
 
     if (isWin) {
-      const win = betAmount * multiplier;
+      const pointsChange = entryPoints * (multiplier - 1); // Выигрываем только чистый прирост
       setGameResult("win");
-      setWinAmount(win);
-      const newBalance = balance - betAmount + win;
-      setBalance(newBalance);
-      onGameResult("win", win, newBalance);
+      setPointsWon(pointsChange);
+      const newPoints = points - entryPoints + entryPoints * multiplier;
+      setPoints(newPoints);
+      onGameResult("win", pointsChange, newPoints);
     } else {
       setGameResult("loss");
-      setWinAmount(betAmount);
-      onGameResult("loss", betAmount, balance - betAmount);
+      setPointsWon(entryPoints);
+      onGameResult("loss", entryPoints, points - entryPoints);
     }
   };
 
-  const increaseBet = (amount: number) => {
-    const newBet = betAmount + amount;
-    if (newBet <= balance) {
-      setBetAmount(newBet);
+  const increaseEntry = (amount: number) => {
+    const newEntry = entryPoints + amount;
+    if (newEntry <= points) {
+      setEntryPoints(newEntry);
     }
   };
 
-  const setMaxBet = () => {
-    setBetAmount(balance);
+  const setMaxEntry = () => {
+    setEntryPoints(Math.min(points, bet.max)); // Ограничиваем максимальную ставку
   };
 
   const handleBetSelect = (betType: BetType) => {
@@ -260,9 +251,10 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
           Назад
         </button>
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Рулетка</h1>
-          <div className="text-white/60 text-sm">
-            Баланс: {balance.toLocaleString()} ₽
+          <h1 className="text-2xl font-bold">ИГРОВАЯ РУЛЕТКА</h1>
+          <div className="flex items-center gap-1 text-white/60 text-sm">
+            <Trophy className="w-4 h-4 text-yellow-400" />
+            Очки: {points.toLocaleString()}
           </div>
         </div>
         <div className="w-10"></div>
@@ -280,7 +272,7 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
                   ref={wheelRef}
                   className="w-full h-full rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border-2 md:border-4 border-yellow-400 relative"
                   style={{
-                    willChange: "transform", // Оптимизация для анимации
+                    willChange: "transform",
                   }}
                 >
                   {/* Центральный круг */}
@@ -297,7 +289,7 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
                   {/* Числа на рулетке */}
                   {rouletteNumbers.map((item, index) => {
                     const angle = getNumberPosition(index);
-                    const radius = 90; // Уменьшил радиус для мобильных
+                    const radius = 90;
                     const x = Math.cos((angle * Math.PI) / 180) * radius;
                     const y = Math.sin((angle * Math.PI) / 180) * radius;
 
@@ -324,9 +316,7 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
             {/* Статический указатель */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
               <div className="relative">
-                {/* Основание указателя */}
                 <div className="w-6 h-6 md:w-8 md:h-8 bg-red-600 rounded-full border-2 border-white shadow-lg"></div>
-                {/* Стрелка */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-6 md:-translate-y-8 w-0 h-0 border-l-4 border-r-4 border-b-6 md:border-l-6 md:border-r-6 md:border-b-8 border-l-transparent border-r-transparent border-b-red-600"></div>
               </div>
             </div>
@@ -362,19 +352,29 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
               gameResult === "win" ? "text-green-400" : "text-red-400"
             }`}
           >
-            {gameResult === "win" &&
-              `🎉 Выигрыш ${winAmount.toLocaleString()} ₽!`}
-            {gameResult === "loss" &&
-              `😞 Проигрыш ${betAmount.toLocaleString()} ₽`}
+            {gameResult === "win" && (
+              <div className="flex items-center justify-center gap-2">
+                <Trophy className="w-6 h-6 text-yellow-400" />
+                <span>ПОБЕДА! +{pointsWon} очков</span>
+                <Trophy className="w-6 h-6 text-yellow-400" />
+              </div>
+            )}
+            {gameResult === "loss" && (
+              <div className="flex items-center justify-center gap-2">
+                <Target className="w-6 h-6 text-orange-400" />
+                <span>Проигрыш -{entryPoints} очков</span>
+                <Target className="w-6 h-6 text-orange-400" />
+              </div>
+            )}
           </div>
         )}
 
         {/* Кнопка вращения */}
         <button
           onClick={spinWheel}
-          disabled={isSpinning || !selectedBet || betAmount > balance}
+          disabled={isSpinning || !selectedBet || entryPoints > points}
           className={`w-full py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 ${
-            isSpinning || !selectedBet || betAmount > balance
+            isSpinning || !selectedBet || entryPoints > points
               ? "bg-gray-600 cursor-not-allowed"
               : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
           }`}
@@ -390,7 +390,6 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
         </button>
       </div>
 
-      {/* Остальной код с адаптацией для мобильных */}
       {/* Выбор ставки */}
       <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-4">
         <div className="text-white/60 text-sm mb-3">Тип ставки</div>
@@ -445,20 +444,21 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <span className="text-white/60 text-sm md:text-base">
-              Сумма ставки
+              Стоимость участия
             </span>
-            <span className="font-bold text-base md:text-lg">
-              {betAmount.toLocaleString()} ₽
+            <span className="font-bold text-base md:text-lg flex items-center gap-1">
+              <Star className="w-4 h-4 text-yellow-400" />
+              {entryPoints.toLocaleString()}
             </span>
           </div>
 
           <div className="flex gap-2 mb-3">
-            {[100, 500, 1000].map((amount) => (
+            {bet.fast.map((amount) => (
               <button
                 key={amount}
-                onClick={() => setBetAmount(amount)}
+                onClick={() => setEntryPoints(amount)}
                 className={`flex-1 py-2 rounded-lg border transition-all text-sm ${
-                  betAmount === amount
+                  entryPoints === amount
                     ? "bg-purple-600 border-purple-400"
                     : "bg-white/5 border-white/10 hover:bg-white/10"
                 }`}
@@ -467,7 +467,7 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
               </button>
             ))}
             <button
-              onClick={setMaxBet}
+              onClick={setMaxEntry}
               className="flex-1 py-2 rounded-lg border border-yellow-400/30 bg-yellow-400/10 hover:bg-yellow-400/20 transition-all text-sm"
             >
               MAX
@@ -476,16 +476,16 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
 
           <div className="flex gap-2">
             <button
-              onClick={() => increaseBet(100)}
+              onClick={() => increaseEntry(bet.increase[0])}
               className="flex-1 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-sm"
             >
-              +100
+              +{bet.increase[0]}
             </button>
             <button
-              onClick={() => increaseBet(500)}
+              onClick={() => increaseEntry(bet.increase[1])}
               className="flex-1 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-sm"
             >
-              +500
+              +{bet.increase[1]}
             </button>
           </div>
         </div>
@@ -496,17 +496,21 @@ export const RouletteGame: React.FC<RouletteGameProps> = ({
             <span className="text-yellow-400 font-bold">
               x{getCurrentMultiplier()}
             </span>{" "}
-            • Выигрыш:{" "}
+            • Возможный выигрыш:{" "}
             <span className="text-green-400 font-bold">
-              {(betAmount * getCurrentMultiplier()).toLocaleString()} ₽
+              +{(entryPoints * (getCurrentMultiplier() - 1)).toLocaleString()}{" "}
+              очков
             </span>
           </div>
         )}
       </div>
 
-      {/* Правила */}
-      <div className="mt-4 text-center text-white/50 text-xs">
-        🔴 Красное (x2) • ⚫ Черное (x2) • 🟢 Ноль (x36) • 🎯 Число (x36)
+      {/* Предупреждение */}
+      <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+        <div className="text-yellow-400 text-xs text-center">
+          ⚠️ Игра предназначена для развлечения. Игровые очки не имеют денежной
+          стоимости.
+        </div>
       </div>
     </div>
   );

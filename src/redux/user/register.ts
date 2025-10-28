@@ -59,7 +59,7 @@ export const registerUser = createAsyncThunk(
         },
 
         card: {
-          balance: 10000,
+          points: 10000,
           number: cardNumber,
           code: cardCode,
           date: cardDate,

@@ -1,15 +1,8 @@
 import React from "react";
 import {
-  User,
-  Settings,
-  Bell,
-  Shield,
   HelpCircle,
   LogOut,
-  CreditCard,
   Crown,
-  Star,
-  Phone,
   Mail,
   Calendar,
 } from "lucide-react";
@@ -91,7 +84,7 @@ export const Profile: React.FC = () => {
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-white">
-              {userData?.card?.balance?.toLocaleString("ru-RU") || "0"} 
+              {userData?.card?.points?.toLocaleString("ru-RU") || "0"}
             </div>
             <div className="text-white/60 text-xs">Баланс(₽)</div>
           </div>

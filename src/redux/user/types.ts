@@ -16,11 +16,11 @@ export type User = {
   };
 
   card: {
-    balance: number;
+    points: number;
     number: string;
     code: string;
     date: string;
-  }
+  };
 
   joinedDate: string;
 };

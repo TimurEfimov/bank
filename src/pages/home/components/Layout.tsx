@@ -1,4 +1,3 @@
-import { ChevronDown } from "lucide-react";
 import React from "react";
 import standardAvatar from "../../../assets/avatar.png";
 
@@ -31,10 +30,7 @@ export const Layout: React.FC<Props> = ({ avatar, fullName }) => {
           </div>
         </div>
 
-        {/* Кнопка меню */}
-        <button className="flex items-center gap-1 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/15 transition-all duration-200 border border-white/10 hover:border-emerald-500/40">
-          <ChevronDown className="w-4 h-4 text-emerald-400" />
-        </button>
+        
       </div>
     </div>
   );
