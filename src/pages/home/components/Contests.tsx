@@ -11,7 +11,7 @@ const mockContests: ContestSlide[] = [
   {
     id: 1,
     title: "Mellstroy.game",
-    subtitle: "Призовой фонд 1.000.000₽",
+    subtitle: "Призовой фонд $10,000",
     backgroundImage: "/contests/contest1.jpg",
   },
   {
@@ -40,7 +40,7 @@ export const Contests: React.FC = () => {
   }, []);
 
   return (
-    <div className="relative h-28 overflow-hidden bg-purple-950/80 rounded-2xl mx-4 mt-4 shadow-xl border border-emerald-500/20 backdrop-blur-sm">
+    <div className="relative h-24 overflow-hidden bg-gray-800 rounded-xl mx-4 mt-4 border border-gray-700">
       {/* Карусель с переключением */}
       <div
         className="flex h-full transition-transform duration-300 ease-in-out"
@@ -56,13 +56,15 @@ export const Contests: React.FC = () => {
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url(${contest.backgroundImage})` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-950/90 to-emerald-900/70" />
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 to-gray-800/80" />
             </div>
 
             {/* Контент */}
-            <div className="relative z-10 h-full flex flex-col justify-center p-5">
-              <h3 className="text-xl game mb-1 text-white">{contest.title}</h3>
-              <p className="text-emerald-300 text-sm font-medium tracking-wide">
+            <div className="relative z-10 h-full flex flex-col justify-center p-4">
+              <h3 className="text-lg font-bold mb-1 text-white game">
+                {contest.title}
+              </h3>
+              <p className="text-green-400 text-sm font-medium">
                 {contest.subtitle}
               </p>
             </div>
@@ -71,15 +73,15 @@ export const Contests: React.FC = () => {
       </div>
 
       {/* Индикаторы слайдов */}
-      <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+      <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-1 z-20">
         {mockContests.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
               index === currentSlide
-                ? "bg-emerald-400 scale-125"
-                : "bg-white/30 hover:bg-white/50"
+                ? "bg-green-500"
+                : "bg-gray-500 hover:bg-gray-400"
             }`}
           />
         ))}

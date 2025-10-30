@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import type { GamesProps } from "../Games";
 
-
-
 const cardValues = [
   "2",
   "3",
@@ -34,7 +32,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
   setPoints,
   onBack,
   onGameResult,
-  bet
+  bet,
 }) => {
   const [entryPoints, setEntryPoints] = useState<number>(bet.min);
   const [playerCards, setPlayerCards] = useState<string[]>([]);
@@ -164,7 +162,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
     setGameState("finished");
 
     if (finalResult === "win") {
-      finalPointsChange = entryPoints;
+      finalPointsChange = entryPoints * 2; // Выигрыш 2x от ставки
       const newPoints = points + finalPointsChange;
       setPointsWon(finalPointsChange);
       setPoints(newPoints);
@@ -176,7 +174,9 @@ export const BlackjackGame: React.FC<GamesProps> = ({
       setPoints(newPoints);
       onGameResult("loss", finalPointsChange, newPoints);
     } else {
+      // Push - возврат ставки
       setPointsWon(0);
+      // Очки не меняются
     }
   };
 
@@ -196,7 +196,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
   };
 
   const setMaxEntry = () => {
-    setEntryPoints(Math.min(points, bet.max)); // Ограничиваем максимальную ставку
+    setEntryPoints(Math.min(points, bet.max));
   };
 
   const playerValue = calculateHandValue(playerCards);
@@ -207,49 +207,40 @@ export const BlackjackGame: React.FC<GamesProps> = ({
     return suit === "♥" || suit === "♦" ? "text-red-500" : "text-white";
   };
 
-  const getSuitColor = (suit: string) => {
-    return suit === "♥" || suit === "♦" ? "text-red-400" : "text-white";
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-emerald-900 to-green-950 text-white p-3 relative overflow-hidden">
-      {/* Анимированный фон */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-green-500/10 animate-pulse"></div>
-
-      {/* Компактный Header */}
-      <div className="relative flex items-center justify-between mb-4 z-10">
+    <div className="min-h-screen bg-gray-900 text-white p-4 relative">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-1 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-3 py-2 rounded-xl border border-white/20 transition-all duration-200"
+          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span className="text-sm">Назад</span>
         </button>
         <div className="text-center">
-          <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
-            21 ОЧКО
-          </h1>
-          <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
-            <Trophy className="w-3 h-3 text-yellow-400" />
+          <h1 className="text-xl font-bold text-white">БЛЭКДЖЕК</h1>
+          <div className="flex items-center gap-2 mt-1 bg-gray-800 px-4 py-2 rounded-full">
+            <Trophy className="w-4 h-4 text-yellow-400" />
             <div className="font-semibold text-sm">
-              {points.toLocaleString()} очков
+              ${points.toLocaleString()}
             </div>
           </div>
         </div>
-        <div className="w-2"></div>
+        <div className="w-10"></div>
       </div>
 
-      {/* Основная игровая зона */}
-      <div className="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl p-4 border-2 border-emerald-500/30 shadow-lg shadow-emerald-500/20 mb-3">
+      {/* Game Area */}
+      <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-4">
         {/* Dealer's Hand */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-red-400" />
-              <div className="text-white/70 text-sm font-semibold">ДИЛЛЕР</div>
+              <div className="text-gray-300 text-sm font-semibold">ДИЛЕР</div>
             </div>
             {gameState !== "selecting" && (
-              <div className="bg-red-500/10 border border-red-400/30 px-2 py-1 rounded-full">
+              <div className="bg-red-500/10 border border-red-400/30 px-3 py-1 rounded-full">
                 <div className="text-red-300 font-bold text-sm">
                   {dealerValue}
                 </div>
@@ -260,7 +251,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
             {dealerCards.map((card, index) => (
               <div
                 key={index}
-                className={`relative w-12 h-16 bg-gradient-to-b from-gray-700 to-gray-800 rounded-lg flex flex-col items-center justify-center border border-red-500/30 shadow-md flex-shrink-0 ${
+                className={`w-12 h-16 bg-gray-700 rounded-lg flex flex-col items-center justify-center border border-red-500/30 shadow-md flex-shrink-0 ${
                   index > 0 && gameState === "player-turn" ? "opacity-70" : ""
                 }`}
               >
@@ -268,9 +259,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                   {card.slice(0, -1)}
                 </div>
                 <div
-                  className={`text-xs ${getSuitColor(
-                    card.slice(-1)
-                  )} absolute bottom-1`}
+                  className={`text-xs ${getCardColor(card)} absolute bottom-1`}
                 >
                   {card.slice(-1)}
                 </div>
@@ -279,26 +268,26 @@ export const BlackjackGame: React.FC<GamesProps> = ({
           </div>
         </div>
 
-        {/* Разделитель */}
-        <div className="flex justify-center mb-4">
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"></div>
+        {/* Divider */}
+        <div className="flex justify-center mb-6">
+          <div className="w-full h-px bg-gray-600"></div>
         </div>
 
         {/* Player's Hand */}
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Crown className="w-4 h-4 text-cyan-400" />
-              <div className="text-white/70 text-sm font-semibold">ВЫ</div>
+              <Crown className="w-4 h-4 text-blue-400" />
+              <div className="text-gray-300 text-sm font-semibold">ВЫ</div>
             </div>
             {gameState !== "selecting" && (
               <div
-                className={`px-2 py-1 rounded-full border text-sm ${
+                className={`px-3 py-1 rounded-full border text-sm ${
                   playerValue > 21
                     ? "bg-red-500/10 border-red-400/30 text-red-300"
                     : playerValue === 21
                     ? "bg-yellow-500/10 border-yellow-400/30 text-yellow-300"
-                    : "bg-cyan-500/10 border-cyan-400/30 text-cyan-300"
+                    : "bg-blue-500/10 border-blue-400/30 text-blue-300"
                 }`}
               >
                 <div className="font-bold">{playerValue}</div>
@@ -309,7 +298,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
             {playerCards.map((card, index) => (
               <div
                 key={index}
-                className={`relative w-12 h-16 bg-gradient-to-b from-cyan-600 to-blue-700 rounded-lg flex flex-col items-center justify-center border border-cyan-400/30 shadow-md flex-shrink-0 ${
+                className={`w-12 h-16 bg-blue-600 rounded-lg flex flex-col items-center justify-center border border-blue-400/30 shadow-md flex-shrink-0 ${
                   index === playerCards.length - 1 ? "animate-pulse" : ""
                 }`}
               >
@@ -317,9 +306,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                   {card.slice(0, -1)}
                 </div>
                 <div
-                  className={`text-xs ${getSuitColor(
-                    card.slice(-1)
-                  )} absolute bottom-1`}
+                  className={`text-xs ${getCardColor(card)} absolute bottom-1`}
                 >
                   {card.slice(-1)}
                 </div>
@@ -333,10 +320,10 @@ export const BlackjackGame: React.FC<GamesProps> = ({
           <button
             onClick={startGame}
             disabled={entryPoints > points}
-            className={`w-full py-3 rounded-xl font-bold transition-all duration-200 text-sm ${
+            className={`w-full py-3 rounded-lg font-bold transition-all text-sm ${
               entryPoints > points
                 ? "bg-gray-600 cursor-not-allowed"
-                : "bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 active:scale-95"
+                : "bg-green-600 hover:bg-green-500 active:scale-95"
             }`}
           >
             НАЧАТЬ ИГРУ
@@ -347,15 +334,15 @@ export const BlackjackGame: React.FC<GamesProps> = ({
           <div className="flex gap-2">
             <button
               onClick={playerHit}
-              className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 rounded-lg font-bold transition-all duration-200 active:scale-95 text-sm"
+              className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-bold transition-all active:scale-95 text-sm"
             >
-              ЕЩЕ КАРТУ
+              КАРТУ
             </button>
             <button
               onClick={playerStand}
-              className="flex-1 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 rounded-lg font-bold transition-all duration-200 active:scale-95 text-sm"
+              className="flex-1 py-3 bg-red-600 hover:bg-red-500 rounded-lg font-bold transition-all active:scale-95 text-sm"
             >
-              ДОСТАТОЧНО
+              ХВАТИТ
             </button>
           </div>
         )}
@@ -373,12 +360,12 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                 }`}
               >
                 <div
-                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-sm border text-sm ${
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
                     gameResult === "win"
-                      ? "bg-green-500/10 border-green-400/30"
+                      ? "bg-green-500/20 border border-green-400/30"
                       : gameResult === "loss"
-                      ? "bg-red-500/10 border-red-400/30"
-                      : "bg-yellow-500/10 border-yellow-400/30"
+                      ? "bg-red-500/20 border border-red-400/30"
+                      : "bg-yellow-500/20 border border-yellow-400/30"
                   }`}
                 >
                   {gameResult === "win" ? (
@@ -386,7 +373,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                       <Trophy className="w-4 h-4 text-yellow-400" />
                       <div>
                         <div className="font-bold">ПОБЕДА!</div>
-                        <div>+{pointsWon} очков</div>
+                        <div>+${pointsWon}</div>
                       </div>
                     </>
                   ) : gameResult === "loss" ? (
@@ -394,7 +381,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                       <Zap className="w-4 h-4 text-orange-400" />
                       <div>
                         <div className="font-bold">ПРОИГРЫШ</div>
-                        <div>-{pointsWon} очков</div>
+                        <div>-${pointsWon}</div>
                       </div>
                     </>
                   ) : (
@@ -402,7 +389,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                       <Shield className="w-4 h-4 text-yellow-400" />
                       <div>
                         <div className="font-bold">НИЧЬЯ</div>
-                        <div>Очки сохранены</div>
+                        <div>Ставка возвращена</div>
                       </div>
                     </>
                   )}
@@ -411,7 +398,7 @@ export const BlackjackGame: React.FC<GamesProps> = ({
             )}
             <button
               onClick={resetGame}
-              className="w-full py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 rounded-lg font-bold transition-all duration-200 active:scale-95 text-sm"
+              className="w-full py-3 bg-green-600 hover:bg-green-500 rounded-lg font-bold transition-all active:scale-95 text-sm"
             >
               ИГРАТЬ СНОВА
             </button>
@@ -419,17 +406,16 @@ export const BlackjackGame: React.FC<GamesProps> = ({
         )}
       </div>
 
-      {/* Entry Points Controls */}
+      {/* Bet Controls */}
       {gameState === "selecting" && (
-        <div className="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl p-4 border-2 border-green-500/30 shadow-lg shadow-green-500/20">
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
           <div className="mb-4">
             <div className="flex justify-between items-center mb-3">
-              <span className="text-white/70 text-sm font-semibold">
-                СТОИМОСТЬ УЧАСТИЯ
+              <span className="text-gray-300 text-sm font-semibold">
+                СТАВКА
               </span>
-              <div className="bg-gradient-to-r from-emerald-500 to-green-500 px-3 py-1 rounded-full font-bold text-sm flex items-center gap-1">
-                <Star className="w-3 h-3" />
-                {entryPoints.toLocaleString()}
+              <div className="bg-green-600 px-3 py-1 rounded-full font-bold text-sm flex items-center gap-1">
+                <Star className="w-3 h-3" />${entryPoints}
               </div>
             </div>
 
@@ -438,59 +424,59 @@ export const BlackjackGame: React.FC<GamesProps> = ({
                 <button
                   key={amount}
                   onClick={() => setEntryPoints(amount)}
-                  className={`py-2 rounded-lg border transition-all duration-200 text-xs font-semibold ${
+                  className={`py-2 rounded-lg border transition-all text-xs ${
                     entryPoints === amount
-                      ? "bg-gradient-to-r from-emerald-600 to-blue-600 border-emerald-400"
-                      : "bg-white/5 border-white/10 hover:bg-white/10"
+                      ? "bg-green-600 border-green-400"
+                      : "bg-gray-700 border-gray-600 hover:bg-gray-600"
                   }`}
                 >
-                  {amount}
+                  ${amount}
                 </button>
               ))}
               <button
                 onClick={setMaxEntry}
-                className="py-2 rounded-lg border border-yellow-400 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all duration-200 text-xs font-semibold"
+                className="py-2 rounded-lg border border-yellow-500 bg-yellow-500/20 hover:bg-yellow-500/30 transition-all text-xs"
               >
-                MAX
+                МАКС
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => increaseEntry(bet.increase[0])}
-                className="py-2 bg-gradient-to-r from-green-600 to-emerald-600 border border-green-400 rounded-lg hover:from-green-500 hover:to-emerald-500 transition-all duration-200 text-xs font-semibold"
+                className="py-2 bg-green-600 border border-green-500 rounded-lg hover:bg-green-500 transition-all text-xs"
               >
-                +{bet.increase[0]}
+                +${bet.increase[0]}
               </button>
               <button
                 onClick={() => increaseEntry(bet.increase[1])}
-                className="py-2 bg-gradient-to-r from-blue-600 to-cyan-600 border border-cyan-400 rounded-lg hover:from-blue-500 hover:to-cyan-500 transition-all duration-200 text-xs font-semibold"
+                className="py-2 bg-blue-600 border border-blue-500 rounded-lg hover:bg-blue-500 transition-all text-xs"
               >
-                +{bet.increase[1]}
+                +${bet.increase[1]}
               </button>
             </div>
           </div>
 
           <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-lg border border-white/10">
-              <Target className="w-3 h-3 text-emerald-300" />
-              <div className="text-emerald-300 font-semibold text-xs">
-                Цель: 21 очко
+            <div className="inline-flex items-center gap-2 bg-gray-700 px-3 py-1 rounded-lg border border-gray-600">
+              <Target className="w-3 h-3 text-green-300" />
+              <div className="text-green-300 font-semibold text-xs">
+                Цель: 21
               </div>
-              <div className="w-1 h-1 bg-white/30 rounded-full"></div>
-              <div className="text-cyan-300 font-semibold text-xs">
-                Победа: +{entryPoints} очков
+              <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+              <div className="text-blue-300 font-semibold text-xs">
+                Выигрыш: ${entryPoints * 2}
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Статус игры */}
+      {/* Game Status */}
       {gameState !== "selecting" && (
-        <div className="text-center mt-2">
-          <div className="inline-flex items-center gap-2 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full border border-white/10">
-            <div className="text-white/60 text-xs">
+        <div className="text-center mt-3">
+          <div className="inline-flex items-center gap-2 bg-gray-800 px-3 py-1 rounded-full border border-gray-700">
+            <div className="text-gray-400 text-xs">
               {gameState === "player-turn" &&
                 "Ваш ход - берите карты или остановитесь"}
               {gameState === "dealer-turn" && "Ход дилера..."}
@@ -499,10 +485,6 @@ export const BlackjackGame: React.FC<GamesProps> = ({
           </div>
         </div>
       )}
-
-      {/* Декоративные элементы */}
-      <div className="absolute top-5 left-5 w-16 h-16 bg-emerald-500/10 rounded-full blur-xl"></div>
-      <div className="absolute bottom-5 right-5 w-16 h-16 bg-green-500/10 rounded-full blur-xl"></div>
     </div>
   );
 };

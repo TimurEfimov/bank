@@ -14,12 +14,12 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <>
-      {/* Spacer для контента - занимает место чтобы контент не скрывался за навигацией */}
-      <div className="h-20" />
+      {/* Spacer для контента */}
+      <div className="h-16" />
 
       {/* Сама навигация */}
-      <div className="fixed bottom-0 left-0 right-0 bg-purple-950/95 border-t border-white/10 backdrop-blur-xl z-50 safe-area-inset-bottom">
-        <div className="flex justify-around items-center py-3 px-4 max-w-md mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 z-50 safe-area-inset-bottom">
+        <div className="flex justify-around items-center py-2 px-4 max-w-md mx-auto">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
             const isActive = currentPath === tab.id;
@@ -28,25 +28,21 @@ export const BottomNavigation: React.FC = () => {
               <Link
                 to={tab.path}
                 key={tab.id}
-                className={`flex flex-col items-center gap-1 transition-all duration-300 flex-1 ${
-                  isActive ? "text-purple-400 scale-105" : "text-white/60"
+                className={`flex flex-col items-center gap-1 transition-colors flex-1 ${
+                  isActive ? "text-green-400" : "text-gray-400"
                 }`}
               >
                 <div
                   className={`
-                  p-2 rounded-xl transition-all duration-300 border
-                  ${
-                    isActive
-                      ? "bg-purple-400/10 border-purple-400/30"
-                      : "bg-transparent border-transparent hover:bg-white/5"
-                  }
+                  p-2 rounded-lg transition-colors
+                  ${isActive ? "bg-green-500/10" : "hover:bg-gray-700"}
                 `}
                 >
                   <IconComponent className="w-5 h-5" />
                 </div>
                 <span
-                  className={`text-xs font-medium transition-all duration-300 ${
-                    isActive ? "text-purple-400" : "text-white/60"
+                  className={`text-xs font-medium ${
+                    isActive ? "text-green-400" : "text-gray-400"
                   }`}
                 >
                   {tab.label}
@@ -54,7 +50,7 @@ export const BottomNavigation: React.FC = () => {
 
                 {/* Индикатор активной вкладки */}
                 {isActive && (
-                  <div className="w-1 h-1 bg-purple-400 rounded-full mt-1"></div>
+                  <div className="w-1 h-1 bg-green-400 rounded-full mt-1"></div>
                 )}
               </Link>
             );

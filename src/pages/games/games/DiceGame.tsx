@@ -10,14 +10,12 @@ import {
 } from "lucide-react";
 import type { GamesProps } from "../Games";
 
-
-
 export const DiceGame: React.FC<GamesProps> = ({
   points,
   setPoints,
   onBack,
   onGameResult,
-  bet
+  bet,
 }) => {
   const [entryPoints, setEntryPoints] = useState<number>(bet.min);
   const [playerDice, setPlayerDice] = useState<number>(1);
@@ -83,58 +81,52 @@ export const DiceGame: React.FC<GamesProps> = ({
   };
 
   const setMaxEntry = () => {
-    setEntryPoints(Math.min(points, bet.max)); // Ограничиваем максимальную ставку
+    setEntryPoints(Math.min(points, bet.max));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-violet-900 text-white p-4 relative overflow-hidden">
-      {/* Анимированный фон */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 animate-pulse"></div>
-
+    <div className="min-h-screen bg-gray-900 text-white p-4 relative">
       {/* Header */}
-      <div className="relative flex items-center justify-between mb-8 z-10">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-3 rounded-2xl border border-white/20 transition-all duration-300 hover:scale-105 z-20"
+          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Назад
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm">Назад</span>
         </button>
         <div className="text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-pink-400 bg-clip-text text-transparent">
-            БРОСОК КОСТЕЙ
-          </h1>
-          <div className="flex items-center gap-2 mt-2 bg-black/40 backdrop-blur-sm px-6 py-3 rounded-full border border-white/10">
+          <h1 className="text-xl font-bold text-white">КОСТИ</h1>
+          <div className="flex items-center gap-2 mt-1 bg-gray-800 px-4 py-2 rounded-full">
             <Trophy className="w-4 h-4 text-yellow-400" />
-            <div className="font-semibold">Очки: {points.toLocaleString()}</div>
+            <div className="font-semibold text-sm">
+              ${points.toLocaleString()}
+            </div>
           </div>
         </div>
         <div className="w-10"></div>
       </div>
 
       {/* Game Area */}
-      <div className="relative max-w-4xl mx-auto mb-8">
-        <div className="relative bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-8 border-2 border-cyan-500/30 shadow-2xl shadow-cyan-500/20">
-          {/* Декоративная полоса */}
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-40 h-2 bg-gradient-to-r from-cyan-500 to-pink-500 rounded-full blur-sm"></div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+      <div className="max-w-md mx-auto mb-6">
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             {/* Игрок */}
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <Target className="w-5 h-5 text-cyan-400" />
-                <div className="text-white/70 text-lg font-semibold">ВЫ</div>
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <Target className="w-4 h-4 text-blue-400" />
+                <div className="text-gray-300 text-sm font-semibold">ВЫ</div>
               </div>
               <div className="relative">
                 <div
-                  className={`text-8xl mb-4 transform transition-all duration-300 ${
+                  className={`text-6xl mb-3 transform transition-all duration-300 ${
                     isRolling ? "scale-110 rotate-12" : "scale-100"
                   }`}
                 >
                   {diceFaces[playerDice - 1]}
                 </div>
-                <div className="bg-cyan-500/10 border border-cyan-400/30 rounded-2xl py-3 px-6 backdrop-blur-sm">
-                  <div className="text-cyan-300 font-bold text-xl">
+                <div className="bg-blue-500/10 border border-blue-400/30 rounded-lg py-2 px-4">
+                  <div className="text-blue-300 font-bold text-sm">
                     Значение: {playerDice}
                   </div>
                 </div>
@@ -143,22 +135,22 @@ export const DiceGame: React.FC<GamesProps> = ({
 
             {/* Компьютер */}
             <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <div className="text-white/70 text-lg font-semibold">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <div className="text-gray-300 text-sm font-semibold">
                   СОПЕРНИК
                 </div>
-                <Zap className="w-5 h-5 text-pink-400" />
+                <Zap className="w-4 h-4 text-red-400" />
               </div>
               <div className="relative">
                 <div
-                  className={`text-8xl mb-4 transform transition-all duration-300 ${
+                  className={`text-6xl mb-3 transform transition-all duration-300 ${
                     isRolling ? "scale-110 -rotate-12" : "scale-100"
                   }`}
                 >
                   {diceFaces[computerDice - 1]}
                 </div>
-                <div className="bg-pink-500/10 border border-pink-400/30 rounded-2xl py-3 px-6 backdrop-blur-sm">
-                  <div className="text-pink-300 font-bold text-xl">
+                <div className="bg-red-500/10 border border-red-400/30 rounded-lg py-2 px-4">
+                  <div className="text-red-300 font-bold text-sm">
                     Значение: {computerDice}
                   </div>
                 </div>
@@ -169,7 +161,7 @@ export const DiceGame: React.FC<GamesProps> = ({
           {/* Result */}
           {gameResult && (
             <div
-              className={`text-center mb-6 animate-scale-in ${
+              className={`text-center mb-4 ${
                 gameResult === "win"
                   ? "text-green-400"
                   : gameResult === "loss"
@@ -178,46 +170,37 @@ export const DiceGame: React.FC<GamesProps> = ({
               }`}
             >
               <div
-                className={`inline-flex items-center gap-4 px-8 py-4 rounded-2xl backdrop-blur-sm border-2 ${
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
                   gameResult === "win"
-                    ? "bg-green-500/10 border-green-400/30 shadow-lg shadow-green-500/20"
+                    ? "bg-green-500/20 border border-green-400/30"
                     : gameResult === "loss"
-                    ? "bg-red-500/10 border-red-400/30 shadow-lg shadow-red-500/20"
-                    : "bg-yellow-500/10 border-yellow-400/30 shadow-lg shadow-yellow-500/20"
+                    ? "bg-red-500/20 border border-red-400/30"
+                    : "bg-yellow-500/20 border border-yellow-400/30"
                 }`}
               >
                 {gameResult === "win" ? (
                   <>
-                    <Trophy className="w-8 h-8 text-yellow-400 animate-bounce" />
+                    <Trophy className="w-4 h-4 text-yellow-400" />
                     <div>
-                      <div className="text-2xl font-bold">ПОБЕДА!</div>
-                      <div className="text-lg font-semibold">
-                        +{pointsWon} очков
-                      </div>
+                      <div className="font-bold">ПОБЕДА!</div>
+                      <div className="text-xs">+${pointsWon}</div>
                     </div>
-                    <Trophy className="w-8 h-8 text-yellow-400 animate-bounce" />
                   </>
                 ) : gameResult === "loss" ? (
                   <>
-                    <Zap className="w-8 h-8 text-orange-400" />
+                    <Zap className="w-4 h-4 text-orange-400" />
                     <div>
-                      <div className="text-2xl font-bold">ПРОИГРЫШ</div>
-                      <div className="text-lg font-semibold">
-                        -{pointsWon} очков
-                      </div>
+                      <div className="font-bold">ПРОИГРЫШ</div>
+                      <div className="text-xs">-${pointsWon}</div>
                     </div>
-                    <Zap className="w-8 h-8 text-orange-400" />
                   </>
                 ) : (
                   <>
-                    <Target className="w-8 h-8 text-yellow-400" />
+                    <Target className="w-4 h-4 text-yellow-400" />
                     <div>
-                      <div className="text-2xl font-bold">НИЧЬЯ!</div>
-                      <div className="text-lg font-semibold">
-                        Очки сохранены
-                      </div>
+                      <div className="font-bold">НИЧЬЯ!</div>
+                      <div className="text-xs">Ставка возвращена</div>
                     </div>
-                    <Target className="w-8 h-8 text-yellow-400" />
                   </>
                 )}
               </div>
@@ -228,107 +211,94 @@ export const DiceGame: React.FC<GamesProps> = ({
           <button
             onClick={rollDice}
             disabled={isRolling || entryPoints > points}
-            className={`relative w-full py-5 rounded-2xl font-bold text-xl transition-all duration-300 transform ${
+            className={`w-full py-3 rounded-lg font-bold transition-all text-sm ${
               isRolling || entryPoints > points
-                ? "bg-gradient-to-r from-gray-600 to-gray-700 cursor-not-allowed scale-95"
-                : "bg-gradient-to-r from-cyan-600 to-pink-600 hover:from-cyan-500 hover:to-pink-500 hover:scale-105 active:scale-95 shadow-lg shadow-cyan-500/30"
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-500 active:scale-95"
             }`}
           >
             {isRolling ? (
-              <div className="flex items-center justify-center gap-3">
-                <RotateCcw className="w-6 h-6 animate-spin" />
+              <div className="flex items-center justify-center gap-2">
+                <RotateCcw className="w-4 h-4 animate-spin" />
                 <span>БРОСАЕМ...</span>
               </div>
             ) : (
-              <div className="flex items-center justify-center gap-3">
-                <Dice5 className="w-6 h-6" />
+              <div className="flex items-center justify-center gap-2">
+                <Dice5 className="w-4 h-4" />
                 <span>БРОСИТЬ КОСТИ</span>
-                <Dice5 className="w-6 h-6" />
               </div>
-            )}
-
-            {/* Свечение кнопки */}
-            {!(isRolling || entryPoints > points) && (
-              <div className="absolute inset-0 bg-cyan-400/20 rounded-2xl blur-md animate-pulse"></div>
             )}
           </button>
         </div>
       </div>
 
-      {/* Entry Points Controls */}
-      <div className="relative max-w-2xl mx-auto bg-gradient-to-b from-gray-800 to-gray-900 rounded-3xl p-6 border-2 border-pink-500/30 shadow-2xl shadow-pink-500/20">
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-white/70 text-lg font-semibold">
-              СТОИМОСТЬ УЧАСТИЯ
-            </span>
-            <div className="bg-gradient-to-r from-cyan-500 to-pink-500 px-6 py-3 rounded-full font-bold text-xl shadow-lg flex items-center gap-2">
-              <Star className="w-5 h-5" />
-              {entryPoints.toLocaleString()}
+      {/* Bet Controls */}
+      <div className="max-w-md mx-auto bg-gray-800 rounded-xl p-4 border border-gray-700">
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-gray-300 text-sm font-semibold">СТАВКА</span>
+            <div className="bg-green-600 px-3 py-1 rounded-full font-bold text-sm flex items-center gap-1">
+              <Star className="w-3 h-3" />${entryPoints}
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-4 gap-2 mb-3">
             {bet.fast.map((amount) => (
               <button
                 key={amount}
                 onClick={() => setEntryPoints(amount)}
-                className={`py-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 font-semibold ${
+                className={`py-2 rounded-lg border transition-all text-xs ${
                   entryPoints === amount
-                    ? "bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 shadow-lg shadow-cyan-500/30"
-                    : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20"
+                    ? "bg-green-600 border-green-400"
+                    : "bg-gray-700 border-gray-600 hover:bg-gray-600"
                 }`}
               >
-                {amount}
+                ${amount}
               </button>
             ))}
             <button
               onClick={setMaxEntry}
-              className="py-4 rounded-xl border-2 border-yellow-400 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 transition-all duration-300 transform hover:scale-105 font-semibold"
+              className="py-2 rounded-lg border border-yellow-500 bg-yellow-500/20 hover:bg-yellow-500/30 transition-all text-xs"
             >
-              MAX
+              МАКС
             </button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => increaseEntry(bet.increase[0])}
-              className="py-4 bg-gradient-to-r from-green-600 to-emerald-600 border-2 border-green-400 rounded-xl hover:from-green-500 hover:to-emerald-500 transition-all duration-300 transform hover:scale-105 font-semibold"
+              className="py-2 bg-green-600 border border-green-500 rounded-lg hover:bg-green-500 transition-all text-xs"
             >
-              +{bet.increase[0]}
+              +${bet.increase[0]}
             </button>
             <button
               onClick={() => increaseEntry(bet.increase[1])}
-              className="py-4 bg-gradient-to-r from-blue-600 to-cyan-600 border-2 border-cyan-400 rounded-xl hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 transform hover:scale-105 font-semibold"
+              className="py-2 bg-blue-600 border border-blue-500 rounded-lg hover:bg-blue-500 transition-all text-xs"
             >
-              +{bet.increase[1]}
+              +${bet.increase[1]}
             </button>
           </div>
         </div>
 
         {/* Правила */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-4 bg-black/40 backdrop-blur-sm px-6 py-3 rounded-2xl border border-white/10">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-cyan-400" />
-              <span className="text-cyan-300 font-semibold">
-                победа: +{entryPoints} очков
+          <div className="inline-flex items-center gap-2 bg-gray-700 px-3 py-2 rounded-lg border border-gray-600">
+            <div className="flex items-center gap-1">
+              <Trophy className="w-3 h-3 text-green-400" />
+              <span className="text-green-300 font-semibold text-xs">
+                Победа: +${entryPoints}
               </span>
             </div>
-            <div className="w-1 h-1 bg-white/30 rounded-full"></div>
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-pink-400" />
-              <span className="text-pink-300 font-semibold">
-                ничья = очки сохранены
+            <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
+            <div className="flex items-center gap-1">
+              <Target className="w-3 h-3 text-yellow-400" />
+              <span className="text-yellow-300 font-semibold text-xs">
+                Ничья = возврат
               </span>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Декоративные элементы */}
-      <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-3xl"></div>
     </div>
   );
 };

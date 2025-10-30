@@ -29,7 +29,7 @@ export const Prizes: React.FC = () => {
       icon: Home,
       color: "from-emerald-600 to-green-600",
       details:
-        "Главный приз: квартира\nДополнительные призы: 1.000.000₽\nСрок: до 17 ноября",
+        "Главный приз: квартира\nДополнительные призы: $10,000\nСрок: до 17 ноября",
       short: "Получи приз",
     },
   ];
@@ -37,24 +37,23 @@ export const Prizes: React.FC = () => {
   return (
     <>
       {/* Три кружочка с условиями */}
-      <div className="relative overflow-hidden bg-purple-950/80 rounded-2xl mx-4 my-6 shadow-xl p-6 border border-emerald-500/20 backdrop-blur-sm">
+      <div className="bg-gray-800 rounded-xl mx-4 my-6 p-4 border border-gray-700">
         <div
-          className="flex justify-between items-center cursor-pointer group"
+          className="flex justify-between items-center cursor-pointer"
         >
           {steps.map((step, index) => {
             const IconComponent = step.icon;
             return (
-              <div key={step.id} className="flex flex-col items-center gap-3">
+              <div key={step.id} className="flex flex-col items-center gap-2">
                 {/* Кружок с иконкой */}
                 <div
                   className={`
-                  w-16 h-16 rounded-full bg-gradient-to-r ${step.color} 
-                  flex items-center justify-center text-white shadow-lg
-                  transform group-hover:scale-110 transition-all duration-300
-                  border-2 border-white/20 hover:border-emerald-400/50
+                  w-12 h-12 rounded-full bg-gradient-to-r ${step.color} 
+                  flex items-center justify-center text-white
+                  border border-white/20
                 `}
                 >
-                  <IconComponent className="w-7 h-7" />
+                  <IconComponent className="w-5 h-5" />
                 </div>
 
                 {/* Подпись */}
@@ -64,7 +63,7 @@ export const Prizes: React.FC = () => {
 
                 {/* Соединительная линия (кроме последнего) */}
                 {index < steps.length - 1 && (
-                  <div className="hidden md:block w-12 h-0.5 bg-gradient-to-r from-emerald-500/60 to-purple-500/60 mt-1" />
+                  <div className="hidden md:block w-8 h-0.5 bg-gray-600 mt-1" />
                 )}
               </div>
             );
@@ -72,13 +71,12 @@ export const Prizes: React.FC = () => {
         </div>
 
         {/* Текст призыва */}
-        <div className="text-center mt-5">
-          <p className="text-purple-300/70 text-sm font-medium">
+        <div className="text-center mt-4">
+          <p className="text-gray-400 text-sm">
             Участвуй в конкурсе и выиграй квартиру!
           </p>
         </div>
       </div>
-
     </>
   );
 };

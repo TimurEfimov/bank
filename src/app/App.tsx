@@ -23,7 +23,7 @@ export const App: React.FC = () => {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gradient-to-b from-purple-900 to-purple-800">
+      <div className="min-h-screen">
         <div className="pb-10">
           <Routes>
             <Route path="/" element={<Home />} />

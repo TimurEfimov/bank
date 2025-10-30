@@ -24,31 +24,28 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   // Красивый лоадер
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
         <div className="text-center">
           {/* Анимированный логотип */}
-          <div className="relative mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mx-auto animate-pulse shadow-lg shadow-purple-500/30"></div>
-            <div className="absolute inset-0 w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mx-auto animate-ping opacity-20"></div>
+          <div className="relative mb-6">
+            <div className="w-16 h-16 bg-gray-700 rounded-xl mx-auto animate-pulse"></div>
           </div>
 
           {/* Текст */}
-          <h2 className="text-2xl font-bold text-white mb-2 animate-pulse">
-            Загрузка
-          </h2>
-          <p className="text-purple-200/70 text-sm mb-6">
+          <h2 className="text-xl font-bold text-white mb-2">Загрузка</h2>
+          <p className="text-gray-400 text-sm mb-4">
             Подготавливаем ваш аккаунт...
           </p>
 
           {/* Анимированные точки */}
           <div className="flex justify-center space-x-1">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
             <div
-              className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
+              className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
               style={{ animationDelay: "0.1s" }}
             ></div>
             <div
-              className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"
+              className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
               style={{ animationDelay: "0.2s" }}
             ></div>
           </div>

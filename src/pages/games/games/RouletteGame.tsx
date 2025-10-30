@@ -68,7 +68,7 @@ export const RouletteGame: React.FC<GamesProps> = ({
   setPoints,
   onBack,
   onGameResult,
-  bet
+  bet,
 }) => {
   const [entryPoints, setEntryPoints] = useState<number>(bet.min);
   const [selectedBet, setSelectedBet] = useState<BetType>(null);
@@ -78,11 +78,9 @@ export const RouletteGame: React.FC<GamesProps> = ({
   const [winningColor, setWinningColor] = useState<string | null>(null);
   const [gameResult, setGameResult] = useState<"win" | "loss" | null>(null);
   const [pointsWon, setPointsWon] = useState<number>(0);
+  const [displayedNumbers, setDisplayedNumbers] = useState<string[]>([]);
 
-  const wheelRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>(0);
-
-  const spinWheel = () => {
+  const spinRoulette = () => {
     if (isSpinning || !selectedBet || entryPoints > points) return;
 
     setIsSpinning(true);
@@ -94,57 +92,34 @@ export const RouletteGame: React.FC<GamesProps> = ({
     const newPoints = points - entryPoints;
     setPoints(newPoints);
 
-    // Анимация вращения с использованием CSS transitions
-    const wheel = wheelRef.current;
-    if (!wheel) return;
+    // Анимация быстрой смены чисел
+    let counter = 0;
+    const maxCount = 20;
+    const interval = setInterval(() => {
+      const randomNumbers = Array.from({ length: 5 }, () => {
+        const randomIndex = Math.floor(Math.random() * rouletteNumbers.length);
+        return rouletteNumbers[randomIndex].number;
+      });
+      setDisplayedNumbers(randomNumbers);
+      counter++;
 
-    // Сбрасываем трансформацию
-    wheel.style.transition = "none";
-    wheel.style.transform = "rotate(0deg)";
+      if (counter >= maxCount) {
+        clearInterval(interval);
 
-    // Форсируем рефлоу
-    wheel.offsetHeight;
-
-    // Запускаем анимацию
-    const startTime = Date.now();
-    const spinDuration = 4000;
-    const totalRotations = 5;
-
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / spinDuration, 1);
-
-      if (progress < 1) {
-        // Продолжаем анимацию
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const rotation = easeOut * 360 * totalRotations;
-
-        wheel.style.transition = "none";
-        wheel.style.transform = `rotate(${rotation}deg)`;
-
-        animationRef.current = requestAnimationFrame(animate);
-      } else {
-        // Завершение анимации
+        // Финальный результат
         const finalIndex = Math.floor(Math.random() * rouletteNumbers.length);
         const finalNumber = rouletteNumbers[finalIndex];
 
-        // Плавное завершение вращения к финальной позиции
-        const finalRotation = (finalIndex / rouletteNumbers.length) * 360;
-        wheel.style.transition = "transform 1s cubic-bezier(0.2, 0.8, 0.3, 1)";
-        wheel.style.transform = `rotate(${
-          360 * totalRotations + finalRotation
-        }deg)`;
+        setWinningNumber(finalNumber.number);
+        setWinningColor(finalNumber.color);
+        setDisplayedNumbers([finalNumber.number]);
 
         setTimeout(() => {
-          setWinningNumber(finalNumber.number);
-          setWinningColor(finalNumber.color);
           setIsSpinning(false);
           checkResult(finalNumber);
-        }, 1000);
+        }, 500);
       }
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
+    }, 100);
   };
 
   const checkResult = (finalNumber: { number: string; color: string }) => {
@@ -171,7 +146,7 @@ export const RouletteGame: React.FC<GamesProps> = ({
     }
 
     if (isWin) {
-      const pointsChange = entryPoints * (multiplier - 1); // Выигрываем только чистый прирост
+      const pointsChange = entryPoints * (multiplier - 1);
       setGameResult("win");
       setPointsWon(pointsChange);
       const newPoints = points - entryPoints + entryPoints * multiplier;
@@ -192,7 +167,7 @@ export const RouletteGame: React.FC<GamesProps> = ({
   };
 
   const setMaxEntry = () => {
-    setEntryPoints(Math.min(points, bet.max)); // Ограничиваем максимальную ставку
+    setEntryPoints(Math.min(points, bet.max));
   };
 
   const handleBetSelect = (betType: BetType) => {
@@ -215,155 +190,122 @@ export const RouletteGame: React.FC<GamesProps> = ({
     }
   };
 
-  const getTextColorClass = (color: string) => {
-    return color === "black" ? "text-white" : "text-white";
-  };
-
   const getCurrentMultiplier = () => {
     const option = betOptions.find((opt) => opt.type === selectedBet);
     return option ? option.multiplier : 1;
   };
 
-  // Функция для получения правильного угла для каждого числа
-  const getNumberPosition = (index: number) => {
-    const angle = (index / rouletteNumbers.length) * 360 - 90;
-    return angle;
+  const getWinningNumberColor = (number: string) => {
+    const numberData = rouletteNumbers.find((item) => item.number === number);
+    return numberData ? numberData.color : "black";
   };
 
-  // Очистка анимации при размонтировании
-  React.useEffect(() => {
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-purple-800 text-white p-4">
+    <div className="min-h-screen bg-gray-900 text-white p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Назад
+          <ArrowLeft className="w-4 h-4" />
+          <span className="text-sm">Назад</span>
         </button>
         <div className="text-center">
-          <h1 className="text-2xl font-bold">ИГРОВАЯ РУЛЕТКА</h1>
-          <div className="flex items-center gap-1 text-white/60 text-sm">
+          <h1 className="text-xl font-bold text-white">РУЛЕТКА</h1>
+          <div className="flex items-center gap-2 mt-1 bg-gray-800 px-4 py-2 rounded-full">
             <Trophy className="w-4 h-4 text-yellow-400" />
-            Очки: {points.toLocaleString()}
+            <div className="font-semibold text-sm">
+              ${points.toLocaleString()}
+            </div>
           </div>
         </div>
         <div className="w-10"></div>
       </div>
 
-      {/* Рулетка */}
-      <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-6">
-        <div className="flex justify-center mb-6">
-          <div className="relative">
-            {/* Внешний круг */}
-            <div className="w-64 h-64 md:w-80 md:h-80 rounded-full border-4 md:border-8 border-yellow-500 bg-gradient-to-br from-yellow-600 to-yellow-800 p-3 md:p-4">
-              {/* Вращающееся колесо */}
-              <div className="relative w-full h-full">
-                <div
-                  ref={wheelRef}
-                  className="w-full h-full rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border-2 md:border-4 border-yellow-400 relative"
-                  style={{
-                    willChange: "transform",
-                  }}
-                >
-                  {/* Центральный круг */}
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 md:w-16 md:h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full border-2 border-yellow-300 flex items-center justify-center">
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full border border-yellow-200 flex items-center justify-center">
-                      {winningNumber && (
-                        <span className="text-black font-bold text-xs md:text-sm">
-                          {winningNumber}
-                        </span>
-                      )}
-                    </div>
+      {/* Игровая зона */}
+      <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-6">
+        {/* Барабан с числами */}
+        <div className="bg-gray-900 rounded-lg p-6 mb-4 border border-gray-600">
+          <div className="text-center mb-4">
+            <div className="text-gray-400 text-sm mb-6">Результат:</div>
+
+            {isSpinning ? (
+              // Анимация вращения
+              <div className="flex justify-center items-center gap-2 h-16">
+                {displayedNumbers.map((number, index) => (
+                  <div
+                    key={index}
+                    className={`w-12 h-12 rounded-lg flex items-center justify-center font-bold text-lg border-2 ${getColorClass(
+                      getWinningNumberColor(number)
+                    )} border-white/30 animate-pulse`}
+                  >
+                    {number}
                   </div>
-
-                  {/* Числа на рулетке */}
-                  {rouletteNumbers.map((item, index) => {
-                    const angle = getNumberPosition(index);
-                    const radius = 90;
-                    const x = Math.cos((angle * Math.PI) / 180) * radius;
-                    const y = Math.sin((angle * Math.PI) / 180) * radius;
-
-                    return (
-                      <div
-                        key={item.number}
-                        className={`absolute w-6 h-6 md:w-8 md:h-8 rounded-full border border-white/30 flex items-center justify-center text-xs font-bold shadow-lg ${getColorClass(
-                          item.color
-                        )} ${getTextColorClass(item.color)}`}
-                        style={{
-                          left: `calc(50% + ${x}px)`,
-                          top: `calc(50% + ${y}px)`,
-                          transform: "translate(-50%, -50%)",
-                        }}
-                      >
-                        {item.number}
-                      </div>
-                    );
-                  })}
+                ))}
+              </div>
+            ) : winningNumber ? (
+              // Финальный результат
+              <div className="flex justify-center">
+                <div
+                  className={`w-20 h-20 rounded-xl flex items-center justify-center font-bold text-2xl border-4 ${getColorClass(
+                    winningColor || "black"
+                  )} border-white/50 shadow-lg animate-bounce`}
+                >
+                  {winningNumber}
                 </div>
               </div>
-            </div>
-
-            {/* Статический указатель */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
-              <div className="relative">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-red-600 rounded-full border-2 border-white shadow-lg"></div>
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-6 md:-translate-y-8 w-0 h-0 border-l-4 border-r-4 border-b-6 md:border-l-6 md:border-r-6 md:border-b-8 border-l-transparent border-r-transparent border-b-red-600"></div>
+            ) : (
+              // Стартовый экран
+              <div className="h-16 flex items-center justify-center">
+                <div className="text-gray-500 text-lg">
+                  Выберите ставку и нажмите "Крутить"
+                </div>
               </div>
-            </div>
+            )}
           </div>
-        </div>
 
-        {/* Результат */}
-        <div className="text-center mb-4">
-          {winningNumber && winningColor && (
-            <>
-              <div className="text-white/60 text-sm mb-2">Выпало:</div>
-              <div
-                className={`text-xl md:text-3xl font-bold px-4 py-2 md:px-6 md:py-3 rounded-xl md:rounded-2xl inline-block shadow-lg ${getColorClass(
-                  winningColor
-                )} border border-white/30`}
-              >
-                {winningNumber}{" "}
-                <span className="text-lg md:text-2xl">
+          {/* Индикатор цвета */}
+          {winningColor && (
+            <div className="text-center mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700">
+                <span className="text-gray-400">Цвет:</span>
+                <span
+                  className={`font-bold ${
+                    winningColor === "red"
+                      ? "text-red-400"
+                      : winningColor === "black"
+                      ? "text-gray-300"
+                      : "text-green-400"
+                  }`}
+                >
                   {winningColor === "red"
-                    ? "🔴"
+                    ? "🔴 Красный"
                     : winningColor === "black"
-                    ? "⚫"
-                    : "🟢"}
+                    ? "⚫ Черный"
+                    : "🟢 Зеленый"}
                 </span>
               </div>
-            </>
+            </div>
           )}
         </div>
 
         {gameResult && (
           <div
-            className={`text-center text-lg md:text-xl font-bold mb-4 ${
+            className={`text-center font-bold mb-4 ${
               gameResult === "win" ? "text-green-400" : "text-red-400"
             }`}
           >
             {gameResult === "win" && (
               <div className="flex items-center justify-center gap-2">
-                <Trophy className="w-6 h-6 text-yellow-400" />
-                <span>ПОБЕДА! +{pointsWon} очков</span>
-                <Trophy className="w-6 h-6 text-yellow-400" />
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                <span>ПОБЕДА! +${pointsWon}</span>
               </div>
             )}
             {gameResult === "loss" && (
               <div className="flex items-center justify-center gap-2">
-                <Target className="w-6 h-6 text-orange-400" />
-                <span>Проигрыш -{entryPoints} очков</span>
-                <Target className="w-6 h-6 text-orange-400" />
+                <Target className="w-5 h-5 text-orange-400" />
+                <span>ПРОИГРЫШ -${entryPoints}</span>
               </div>
             )}
           </div>
@@ -371,12 +313,12 @@ export const RouletteGame: React.FC<GamesProps> = ({
 
         {/* Кнопка вращения */}
         <button
-          onClick={spinWheel}
+          onClick={spinRoulette}
           disabled={isSpinning || !selectedBet || entryPoints > points}
-          className={`w-full py-3 md:py-4 rounded-xl font-bold text-base md:text-lg transition-all duration-300 ${
+          className={`w-full py-3 rounded-lg font-bold transition-all text-sm ${
             isSpinning || !selectedBet || entryPoints > points
               ? "bg-gray-600 cursor-not-allowed"
-              : "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
+              : "bg-green-600 hover:bg-green-500 active:scale-95"
           }`}
         >
           {isSpinning ? (
@@ -391,25 +333,21 @@ export const RouletteGame: React.FC<GamesProps> = ({
       </div>
 
       {/* Выбор ставки */}
-      <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-4">
-        <div className="text-white/60 text-sm mb-3">Тип ставки</div>
+      <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-4">
+        <div className="text-gray-400 text-sm mb-3">Тип ставки</div>
         <div className="grid grid-cols-2 gap-2">
           {betOptions.map((option) => (
             <button
               key={option.type}
               onClick={() => handleBetSelect(option.type)}
-              className={`p-2 md:p-3 rounded-lg md:rounded-xl border transition-all text-left ${
+              className={`p-3 rounded-lg border transition-all text-left ${
                 selectedBet === option.type
-                  ? "bg-purple-600 border-purple-400 shadow-lg"
-                  : "bg-white/5 border-white/10 hover:bg-white/10"
+                  ? "bg-green-600 border-green-400"
+                  : "bg-gray-700 border-gray-600 hover:bg-gray-600"
               }`}
             >
-              <div className="font-semibold text-sm md:text-base">
-                {option.label}
-              </div>
-              <div className="text-white/60 text-xs md:text-sm">
-                {option.description}
-              </div>
+              <div className="font-semibold text-sm">{option.label}</div>
+              <div className="text-gray-400 text-xs">{option.description}</div>
             </button>
           ))}
         </div>
@@ -417,22 +355,22 @@ export const RouletteGame: React.FC<GamesProps> = ({
 
       {/* Выбор числа */}
       {selectedBet === "number" && (
-        <div className="bg-white/5 rounded-2xl p-4 border border-white/10 mb-4">
-          <div className="text-white/60 text-sm mb-3">Выберите число</div>
-          <div className="grid grid-cols-6 gap-1 md:gap-2 max-h-32 md:max-h-40 overflow-y-auto">
+        <div className="bg-gray-800 rounded-xl p-4 border border-gray-700 mb-4">
+          <div className="text-gray-400 text-sm mb-3">Выберите число</div>
+          <div className="grid grid-cols-6 gap-1 max-h-32 overflow-y-auto">
             {rouletteNumbers.map((item) => (
               <button
                 key={item.number}
                 onClick={() => setSelectedNumber(item.number)}
-                className={`p-1 md:p-2 rounded md:rounded-lg border transition-all ${getColorClass(
+                className={`p-2 rounded border transition-all ${getColorClass(
                   item.color
                 )} ${
                   selectedNumber === item.number
-                    ? "ring-2 ring-yellow-400 shadow-lg"
+                    ? "ring-2 ring-yellow-400"
                     : "hover:opacity-80"
                 }`}
               >
-                <span className="text-xs md:text-sm">{item.number}</span>
+                <span className="text-xs">{item.number}</span>
               </button>
             ))}
           </div>
@@ -440,76 +378,71 @@ export const RouletteGame: React.FC<GamesProps> = ({
       )}
 
       {/* Управление ставкой */}
-      <div className="bg-white/5 rounded-2xl p-4 md:p-6 border border-white/10">
+      <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
         <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-white/60 text-sm md:text-base">
-              Стоимость участия
-            </span>
-            <span className="font-bold text-base md:text-lg flex items-center gap-1">
-              <Star className="w-4 h-4 text-yellow-400" />
-              {entryPoints.toLocaleString()}
+          <div className="flex justify-between items-center mb-3">
+            <span className="text-gray-400 text-sm">Ставка</span>
+            <span className="font-bold text-sm flex items-center gap-1">
+              <Star className="w-4 h-4 text-yellow-400" />${entryPoints}
             </span>
           </div>
 
-          <div className="flex gap-2 mb-3">
+          <div className="grid grid-cols-4 gap-2 mb-3">
             {bet.fast.map((amount) => (
               <button
                 key={amount}
                 onClick={() => setEntryPoints(amount)}
-                className={`flex-1 py-2 rounded-lg border transition-all text-sm ${
+                className={`py-2 rounded-lg border transition-all text-xs ${
                   entryPoints === amount
-                    ? "bg-purple-600 border-purple-400"
-                    : "bg-white/5 border-white/10 hover:bg-white/10"
+                    ? "bg-green-600 border-green-400"
+                    : "bg-gray-700 border-gray-600 hover:bg-gray-600"
                 }`}
               >
-                {amount}
+                ${amount}
               </button>
             ))}
             <button
               onClick={setMaxEntry}
-              className="flex-1 py-2 rounded-lg border border-yellow-400/30 bg-yellow-400/10 hover:bg-yellow-400/20 transition-all text-sm"
+              className="py-2 rounded-lg border border-yellow-500 bg-yellow-500/20 hover:bg-yellow-500/30 transition-all text-xs"
             >
-              MAX
+              МАКС
             </button>
           </div>
 
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => increaseEntry(bet.increase[0])}
-              className="flex-1 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-sm"
+              className="py-2 bg-green-600 border border-green-500 rounded-lg hover:bg-green-500 transition-all text-xs"
             >
-              +{bet.increase[0]}
+              +${bet.increase[0]}
             </button>
             <button
               onClick={() => increaseEntry(bet.increase[1])}
-              className="flex-1 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-all text-sm"
+              className="py-2 bg-blue-600 border border-blue-500 rounded-lg hover:bg-blue-500 transition-all text-xs"
             >
-              +{bet.increase[1]}
+              +${bet.increase[1]}
             </button>
           </div>
         </div>
 
         {selectedBet && (
-          <div className="text-center text-white/60 text-xs md:text-sm">
+          <div className="text-center text-gray-400 text-xs">
             Множитель:{" "}
             <span className="text-yellow-400 font-bold">
               x{getCurrentMultiplier()}
             </span>{" "}
             • Возможный выигрыш:{" "}
             <span className="text-green-400 font-bold">
-              +{(entryPoints * (getCurrentMultiplier() - 1)).toLocaleString()}{" "}
-              очков
+              +${(entryPoints * (getCurrentMultiplier() - 1)).toLocaleString()}
             </span>
           </div>
         )}
       </div>
 
       {/* Предупреждение */}
-      <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+      <div className="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
         <div className="text-yellow-400 text-xs text-center">
-          ⚠️ Игра предназначена для развлечения. Игровые очки не имеют денежной
-          стоимости.
+          ⚠️ Для развлекательных целей
         </div>
       </div>
     </div>
