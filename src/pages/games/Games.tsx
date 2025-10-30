@@ -36,11 +36,7 @@ export const Games: React.FC = () => {
   const [points, setPoints] = useState<number>(userData?.card?.points || 0);
 
   // Исправленная функция для обновления статистики после игры
-  const handleGameResult = (
-    result: "win" | "loss",
-    pointsChange: number,
-    newPoints: number
-  ) => {
+  const handleGameResult = (result: "win" | "loss", newPoints: number) => {
     if (!userData) return;
 
     const currentWins = userData.stats?.wins || 0;

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { ArrowLeft, Target, Trophy, Star } from "lucide-react";
 import type { GamesProps } from "../Games";
 
